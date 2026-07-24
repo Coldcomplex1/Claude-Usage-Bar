@@ -11,6 +11,7 @@
   var PLACE_MS = 800;
 
   var barEl = null, enabled = true, lastData = null, pollTimer = null, placeTimer = null;
+  var placeObserver = null, observedParent = null, observedComposer = null, reinserts = [];
   var show = { session: true, allModels: true };
 
   var SEGS = [
@@ -77,44 +78,76 @@
     });
   }
 
-  // The Claude Code web app (/code) is a separate React surface with no stable
-  // chat composer to sit under: injecting inline lost a placement war with React
-  // (the bar flickered on and off). So on /code we float the bar in a fixed spot,
-  // docked to the bottom-left corner where it stays clear of the composer.
-  function isCodeRoute(){
-    var p = location.pathname;
-    return p === "/code" || p.indexOf("/code/") === 0;
-  }
-
+  // The chat input differs across surfaces (contenteditable on /new & chats, and
+  // the Claude Code app on /code). Pick the bottom-most visible input on the page
+  // — the composer always sits at the bottom — then walk up to its container so
+  // the bar lands inside the composer box, the same on every surface.
   function findComposer(){
-    var editor = document.querySelector('div[contenteditable="true"]');
+    var nodes = document.querySelectorAll('div[contenteditable="true"], p[contenteditable="true"], textarea');
+    var editor = null, bestBottom = -Infinity;
+    for (var i=0; i<nodes.length; i++){
+      var n = nodes[i];
+      if (!n.offsetParent && n.getClientRects().length === 0) continue; // hidden
+      var r = n.getBoundingClientRect();
+      if (r.width < 120 || r.height === 0) continue;                    // tiny/collapsed
+      if (r.bottom > bestBottom){ bestBottom = r.bottom; editor = n; }
+    }
     if (!editor) return null;
     var node = editor;
-    for (var i=0; i<6 && node.parentElement; i++){
+    for (var j=0; j<6 && node.parentElement; j++){
       node = node.parentElement;
       if (node.getBoundingClientRect().width >= 320) return node;
     }
     return editor.parentElement;
   }
 
+  function insertInline(composer){
+    composer.insertAdjacentElement("afterend", barEl);
+    barEl.classList.remove("cub-fixed");
+  }
+
+  // Allow bursts of re-insertion but back off if a surface fights us every frame,
+  // so we never spin in a tight loop against React (the poll re-acquires instead).
+  function reinsertAllowed(){
+    var now = Date.now();
+    reinserts.push(now);
+    while (reinserts.length && now - reinserts[0] > 1000) reinserts.shift();
+    return reinserts.length <= 5;
+  }
+
+  function stopWatching(){
+    if (placeObserver) placeObserver.disconnect();
+    placeObserver = null; observedParent = null; observedComposer = null;
+  }
+
+  // Watch the composer's parent so that if a re-render detaches the bar we put it
+  // back synchronously (before paint) instead of waiting for the 800ms poll —
+  // that gap is what made the bar flicker on and off on /code.
+  function watchParent(parent, composer){
+    if (observedParent === parent && observedComposer === composer) return;
+    stopWatching();
+    observedParent = parent; observedComposer = composer;
+    placeObserver = new MutationObserver(function(){
+      if (!enabled || !barEl || barEl.isConnected) return;
+      if (!composer.isConnected) return;      // composer replaced → let the poll re-acquire
+      if (!reinsertAllowed()) return;         // thrashing → back off
+      insertInline(composer);
+      applyAndRender();
+    });
+    placeObserver.observe(parent, { childList: true });
+  }
+
   function ensurePlaced(){
     if (!enabled){ if (barEl && barEl.isConnected) barEl.remove(); return; }
     if (!barEl) barEl = buildBar();
-    // On /code: float in a fixed corner (append to body once — React can't tear
-    // it out there) so it stays visible without flickering or covering the input.
-    if (isCodeRoute()){
-      barEl.classList.add("cub-fixed", "cub-code");
-      if (barEl.parentElement !== document.body) document.body.appendChild(barEl);
-      applyAndRender();
-      return;
-    }
-    barEl.classList.remove("cub-code");
     var composer = findComposer();
     if (composer && composer.parentElement){
       var correct = barEl.parentElement === composer.parentElement && barEl.previousElementSibling === composer;
-      if (!correct){ composer.insertAdjacentElement("afterend", barEl); barEl.classList.remove("cub-fixed"); }
-    } else if (!barEl.isConnected){
-      barEl.classList.add("cub-fixed"); document.body.appendChild(barEl);
+      if (!correct) insertInline(composer);
+      watchParent(composer.parentElement, composer);
+    } else {
+      stopWatching();
+      if (!barEl.isConnected){ barEl.classList.add("cub-fixed"); document.body.appendChild(barEl); }
     }
     applyAndRender();
   }
@@ -137,7 +170,7 @@
   function stopPolling(){ if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
 
   function enable(){ enabled = true; ensurePlaced(); startPolling(); }
-  function disable(){ enabled = false; stopPolling(); if (barEl && barEl.isConnected) barEl.remove(); }
+  function disable(){ enabled = false; stopPolling(); stopWatching(); if (barEl && barEl.isConnected) barEl.remove(); }
 
   chrome.storage.onChanged.addListener(function (changes, area){
     if (area !== "local") return;
