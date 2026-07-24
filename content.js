@@ -78,8 +78,9 @@
   }
 
   // The Claude Code web app (/code) is a separate React surface with no stable
-  // chat composer; injecting under it gets torn out on every re-render, which is
-  // what caused the bar to flicker on and off. Detect it so we can pin instead.
+  // chat composer. Injecting under it lost a placement war with React (the bar
+  // flickered on and off), and pinning it to the viewport covered the composer.
+  // There's nowhere safe to place it there, so we keep the bar off /code.
   function isCodeRoute(){
     var p = location.pathname;
     return p === "/code" || p.indexOf("/code/") === 0;
@@ -98,15 +99,9 @@
 
   function ensurePlaced(){
     if (!enabled){ if (barEl && barEl.isConnected) barEl.remove(); return; }
+    // On /code there's no safe spot for the bar, so keep it out of the DOM.
+    if (isCodeRoute()){ if (barEl && barEl.isConnected) barEl.remove(); return; }
     if (!barEl) barEl = buildBar();
-    // On /code, pin the bar to the viewport once and leave it: attaching under
-    // the composer there loses a placement war with React and flickers.
-    if (isCodeRoute()){
-      if (!barEl.classList.contains("cub-fixed")) barEl.classList.add("cub-fixed");
-      if (barEl.parentElement !== document.body) document.body.appendChild(barEl);
-      applyAndRender();
-      return;
-    }
     var composer = findComposer();
     if (composer && composer.parentElement){
       var correct = barEl.parentElement === composer.parentElement && barEl.previousElementSibling === composer;
