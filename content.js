@@ -182,6 +182,7 @@
   // ===================================================================
   var inlineEl = null;
   var inlineObserver = null, inlineObservedToolbar = null, inlineReinserts = [];
+  var inlineLastMissLog = 0;
   var RING_C = 2 * Math.PI * 8; // circumference of the r=8 ring
 
   function inlineSegHtml(s){
@@ -261,23 +262,46 @@
     });
   }
 
-  // Find the toolbar's "+" button: within the composer stack, take the bottom-most
-  // row of buttons (the toolbar) and pick the left-most one. Purely geometric, so
-  // it survives claude.ai's class/label churn like the bar placement does.
+  // Find the toolbar's "+" button. We can't assume the toolbar lives in any one
+  // specific parent (on /new the empty input sits in a min-height wrapper that is
+  // already taller than the text, so the composer's toolbar is a sibling row higher
+  // up). So walk up from the editor and, at each composer-width ancestor, look for
+  // the bottom-most row of controls sitting in the band just below the input; the
+  // innermost match is the composer's own toolbar. Purely geometric, so it survives
+  // claude.ai's class/label churn like the bar placement does.
   function findPlusButton(){
-    var composer = findComposer();
-    var stack = composer && composer.parentElement;
-    if (!stack) return null;
+    var editor = findEditor();
+    if (!editor) return null;
+    var er = editor.getBoundingClientRect();
+    var node = editor;
+    for (var j = 0; j < 10; j++){
+      var parent = node.parentElement;
+      if (!parent) break;
+      if (parent.getBoundingClientRect().width >= 280){
+        var plus = toolbarPlusIn(parent, er, editor);
+        if (plus) return plus;            // innermost match = the composer toolbar
+      }
+      node = parent;
+    }
+    return null;
+  }
+
+  // The left-most control of the bottom-most row of toolbar controls in `container`,
+  // limited to the band at/just below the input so page/sidebar buttons can't sneak
+  // in. Broadened past <button> since claude.ai renders some controls as role=button.
+  function toolbarPlusIn(container, er, editor){
     var btns = [];
-    stack.querySelectorAll("button").forEach(function(b){
+    container.querySelectorAll('button, [role="button"]').forEach(function(b){
+      if (b === editor || b.contains(editor)) return;                 // not the input itself
       if (!b.offsetParent && b.getClientRects().length === 0) return; // hidden
       var r = b.getBoundingClientRect();
-      if (r.width === 0 || r.height === 0) return;
+      if (r.width === 0 || r.height === 0 || r.height > 64) return;   // button-sized only
+      if (r.top < er.top - 8 || r.top > er.bottom + 140) return;      // composer toolbar band
       btns.push({ el: b, r: r });
     });
     if (btns.length < 2) return null;
     var maxBottom = Math.max.apply(null, btns.map(function(x){ return x.r.bottom; }));
-    var row = btns.filter(function(x){ return maxBottom - x.r.bottom <= 14; }); // bottom-most row
+    var row = btns.filter(function(x){ return maxBottom - x.r.bottom <= 16; }); // bottom-most row
     if (row.length < 2) return null;
     row.sort(function(a, b){ return a.r.left - b.r.left; });
     return row[0].el; // left-most = the "+"
@@ -323,6 +347,11 @@
       // Inline-only: with no toolbar to sit in, show nothing and retry next tick.
       stopInlineWatching();
       if (inlineEl.isConnected) inlineEl.remove();
+      var now = Date.now();
+      if (now - inlineLastMissLog > 5000){
+        inlineLastMissLog = now;
+        try { console.debug("[Claude Usage Bar] Design 2: composer toolbar not found; will retry"); } catch (e) {}
+      }
     }
     renderInline();
   }
