@@ -1,0 +1,48 @@
+/* content.css — slim usage bar. Each metric is a 4-column grid so the bar,
+   the % and the reset time line up in their own columns across every row. */
+
+#cub-bar.cub-bar {
+  box-sizing: border-box; width: 100%; margin: 8px auto 0; padding: 9px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+  font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+  font-size: 12px; line-height: 1.2; color: #3d3d3a;
+  background: rgba(255, 255, 255, 0.72); border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  position: relative; z-index: 5;
+}
+#cub-bar.cub-bar.cub-fixed {
+  position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
+  width: min(680px, 92vw); margin: 0; box-shadow: 0 6px 24px rgba(0,0,0,0.14);
+}
+
+#cub-bar .cub-seg {
+  display: grid;
+  grid-template-columns: 100px minmax(30px, 1fr) 42px 58px;
+  column-gap: 12px;
+  align-items: center;
+}
+#cub-bar .cub-seg[hidden] { display: none; }
+
+#cub-bar .cub-label { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#cub-bar .cub-name { font-weight: 600; }
+#cub-bar .cub-sub { font-size: 10px; opacity: 0.5; }
+
+#cub-bar .cub-track {
+  display: block; height: 5px; border-radius: 999px;
+  background: rgba(0, 0, 0, 0.09); overflow: hidden;
+}
+#cub-bar .cub-fill {
+  display: block; height: 100%; width: 0; border-radius: 999px;
+  background: #b9b8b1; transition: width 0.4s ease, background 0.3s ease;
+}
+#cub-bar .cub-fill.cub-low  { background: #378add; }
+#cub-bar .cub-fill.cub-mid  { background: #d85a30; }
+#cub-bar .cub-fill.cub-high { background: #e2564d; }
+
+#cub-bar .cub-val { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+#cub-bar .cub-reset { text-align: left; font-size: 10px; opacity: 0.55; white-space: nowrap; overflow: hidden; }
+
+@media (prefers-color-scheme: dark) {
+  #cub-bar.cub-bar { color: #e7e7e3; background: rgba(45,45,43,0.7); border-color: rgba(255,255,255,0.12); }
+  #cub-bar .cub-track { background: rgba(255,255,255,0.13); }
+}

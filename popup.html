@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="p-wrap">
+      <div class="p-head">
+        <span class="p-title">Claude Usage</span>
+        <label class="p-switch" title="Show the bar on claude.ai">
+          <input type="checkbox" id="toggle" />
+          <span class="p-slider"></span>
+        </label>
+      </div>
+
+      <div id="rows" class="p-rows"><div class="p-empty">Loading…</div></div>
+
+      <div class="p-show">
+        <span class="p-show-label">Show in bar</span>
+        <div class="p-chks">
+          <label class="p-chk"><input type="checkbox" data-show="session" /><span>Session</span></label>
+          <label class="p-chk"><input type="checkbox" data-show="allModels" /><span>All models</span></label>
+        </div>
+      </div>
+
+      <div class="p-foot">
+        <span id="status" class="p-status">…</span>
+        <button id="refresh" class="p-btn">Refresh</button>
+      </div>
+
+      <div class="p-acct">
+        <span id="acct" class="p-acct-name">Account: —</span>
+        <button id="switch" class="p-link">change</button>
+      </div>
+      <div id="scan" class="p-scan" hidden></div>
+
+      <div class="p-hint">Hotkey <span id="hk" class="p-kbd">…</span><a id="hk-edit" class="p-link" href="#">change</a></div>
+    </div>
+
+    <script src="usage.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

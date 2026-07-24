@@ -1,0 +1,69 @@
+/* popup.css */
+* { box-sizing: border-box; }
+body {
+  margin: 0; width: 276px;
+  font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+  font-size: 13px; color: #3d3d3a; background: #faf9f7;
+}
+.p-wrap { padding: 12px 14px 14px; }
+
+.p-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.p-title { font-size: 14px; font-weight: 700; }
+
+.p-switch { position: relative; display: inline-block; width: 38px; height: 22px; }
+.p-switch input { opacity: 0; width: 0; height: 0; }
+.p-slider { position: absolute; inset: 0; cursor: pointer; background: #cfcdc6; border-radius: 999px; transition: background 0.2s; }
+.p-slider::before { content: ""; position: absolute; height: 16px; width: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; }
+.p-switch input:checked + .p-slider { background: #d85a30; }
+.p-switch input:checked + .p-slider::before { transform: translateX(16px); }
+
+.p-rows { display: flex; flex-direction: column; gap: 12px; min-height: 40px; }
+.p-empty { opacity: 0.6; font-size: 12px; padding: 8px 0; }
+.p-row-head { display: flex; align-items: baseline; gap: 6px; margin-bottom: 5px; }
+.p-label { font-weight: 600; }
+.p-sub { font-size: 10px; opacity: 0.5; }
+.p-val { margin-left: auto; font-weight: 600; font-variant-numeric: tabular-nums; }
+.p-track { height: 6px; border-radius: 999px; background: rgba(0,0,0,0.09); overflow: hidden; }
+.p-fill { height: 100%; width: 0; border-radius: 999px; background: #b9b8b1; transition: width 0.4s ease; }
+.p-fill.low  { background: #378add; }
+.p-fill.mid  { background: #d85a30; }
+.p-fill.high { background: #e2564d; }
+.p-reset { margin-top: 3px; font-size: 10px; opacity: 0.55; }
+
+.p-show { margin-top: 14px; }
+.p-show-label { font-size: 11px; opacity: 0.6; }
+.p-chks { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 7px; }
+.p-chk { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; }
+.p-chk input { accent-color: #d85a30; width: 14px; height: 14px; cursor: pointer; }
+
+.p-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.08); }
+.p-status { font-size: 11px; opacity: 0.65; }
+.p-btn { border: 1px solid rgba(0,0,0,0.12); background: #fff; color: inherit; font-size: 12px; padding: 4px 10px; border-radius: 7px; cursor: pointer; }
+.p-btn:hover { background: #f0efeb; }
+
+.p-acct { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+.p-acct-name { font-size: 11px; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.p-link { border: none; background: none; padding: 0; font-size: 11px; color: #d85a30; cursor: pointer; opacity: 0.85; }
+.p-link:hover { opacity: 1; text-decoration: underline; }
+
+.p-scan { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.p-scan-hint { font-size: 11px; opacity: 0.7; }
+.p-org { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; }
+.p-org-info { min-width: 0; }
+.p-org-name { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.p-org-detail { font-size: 10px; opacity: 0.65; font-variant-numeric: tabular-nums; }
+.p-use { flex: none; padding: 3px 10px; font-size: 11px; }
+
+.p-hint { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 11px; opacity: 0.7; }
+.p-kbd { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; padding: 2px 6px; border: 1px solid rgba(0,0,0,0.15); border-radius: 5px; background: rgba(0,0,0,0.03); }
+
+@media (prefers-color-scheme: dark) {
+  body { color: #e7e7e3; background: #262624; }
+  .p-slider { background: #55554f; }
+  .p-track { background: rgba(255,255,255,0.13); }
+  .p-foot { border-top-color: rgba(255,255,255,0.12); }
+  .p-btn { background: #333330; border-color: rgba(255,255,255,0.14); }
+  .p-btn:hover { background: #3d3d3a; }
+  .p-org { border-color: rgba(255,255,255,0.14); }
+  .p-kbd { border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.05); }
+}
