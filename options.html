@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Claude Usage — Settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <div class="o-wrap">
+      <h1 class="o-title">Claude Usage — Settings</h1>
+
+      <section class="o-card">
+        <div class="o-row">
+          <div class="o-row-text">
+            <div class="o-row-label">Show the bar on claude.ai</div>
+            <div class="o-row-sub">The slim usage bar under the chat composer.</div>
+          </div>
+          <label class="p-switch" title="Show the bar on claude.ai">
+            <input type="checkbox" id="toggle" />
+            <span class="p-slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <section class="o-card">
+        <div class="o-row">
+          <div class="o-row-text">
+            <div class="o-row-label">Show usage on the toolbar icon</div>
+            <div class="o-row-sub">A colored number badge on the extension icon — a glance, no clicks.</div>
+          </div>
+          <label class="p-switch" title="Show usage on the toolbar icon">
+            <input type="checkbox" id="badge-enabled" />
+            <span class="p-slider"></span>
+          </label>
+        </div>
+
+        <div id="badge-opts" class="o-suboption">
+          <div class="o-row-sub o-suboption-label">Badge shows</div>
+          <div class="o-radios">
+            <label class="o-radio"><input type="radio" name="badge-source" value="session" /><span>Session (5h)</span></label>
+            <label class="o-radio"><input type="radio" name="badge-source" value="allModels" /><span>Weekly — all models (7d)</span></label>
+            <label class="o-radio"><input type="radio" name="badge-source" value="highest" /><span>Highest of the two</span></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="o-card">
+        <div class="o-row">
+          <div class="o-row-text">
+            <div class="o-row-label">Account</div>
+            <div class="o-row-sub"><span id="acct">—</span></div>
+          </div>
+          <div class="o-actions">
+            <button id="auto" class="p-link" hidden>Use automatic</button>
+            <button id="switch" class="p-btn">Change</button>
+          </div>
+        </div>
+        <div id="scan" class="p-scan" hidden></div>
+      </section>
+
+      <section class="o-card">
+        <div class="o-row">
+          <div class="o-row-text">
+            <div class="o-row-label">Keyboard shortcut</div>
+            <div class="o-row-sub">Show or hide the bar.</div>
+          </div>
+          <div class="o-actions">
+            <span id="hk" class="p-kbd">…</span>
+            <a id="hk-edit" class="p-link" href="#">change</a>
+          </div>
+        </div>
+      </section>
+
+      <div class="o-foot">
+        <a href="privacy-policy.html" target="_blank" rel="noopener" class="p-link">Privacy policy</a>
+      </div>
+    </div>
+
+    <script src="usage.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

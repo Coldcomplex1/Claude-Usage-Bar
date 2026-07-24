@@ -9,10 +9,6 @@
     <div class="p-wrap">
       <div class="p-head">
         <span class="p-title">Claude Usage</span>
-        <label class="p-switch" title="Show the bar on claude.ai">
-          <input type="checkbox" id="toggle" />
-          <span class="p-slider"></span>
-        </label>
       </div>
 
       <div id="rows" class="p-rows"><div class="p-empty">Loading…</div></div>
@@ -27,16 +23,11 @@
 
       <div class="p-foot">
         <span id="status" class="p-status">…</span>
-        <button id="refresh" class="p-btn">Refresh</button>
+        <div class="p-actions">
+          <button id="settings" class="p-btn">Settings</button>
+          <button id="refresh" class="p-btn">Refresh</button>
+        </div>
       </div>
-
-      <div class="p-acct">
-        <span id="acct" class="p-acct-name">Account: —</span>
-        <button id="switch" class="p-link">change</button>
-      </div>
-      <div id="scan" class="p-scan" hidden></div>
-
-      <div class="p-hint">Hotkey <span id="hk" class="p-kbd">…</span><a id="hk-edit" class="p-link" href="#">change</a></div>
     </div>
 
     <script src="usage.js"></script>
