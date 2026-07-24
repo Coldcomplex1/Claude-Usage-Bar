@@ -35,6 +35,9 @@ Works on any Chromium browser (Chrome, Edge, Brave, Arc, Opera).
 
 ## Using it
 
+- The toolbar icon shows a badge with your highest current usage (e.g. `44`),
+  colored blue/orange/red as it climbs — a glance, no clicks. It follows the
+  master on/off and clears when the bar is off.
 - Click the toolbar icon for the popup: master on/off, "Show in bar" (Session /
   All models), account switch, and the hotkey.
 - Hotkey to show/hide the bar: `Ctrl/Cmd + Shift + U`. Rebind at
