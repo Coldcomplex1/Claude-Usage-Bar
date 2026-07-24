@@ -1,4 +1,4 @@
-// popup.js — the slim popup: usage readout, show-in-bar toggles (Session +
+// popup.js: the slim popup. Usage readout, show-in-bar toggles (Session +
 // All models), Refresh, and a Settings button. Everything else (master on/off,
 // badge, account switch, hotkey) lives on the options page.
 var LAST_KEY = "cub_last";

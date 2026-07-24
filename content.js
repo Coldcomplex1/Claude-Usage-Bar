@@ -1,4 +1,4 @@
-// content.js — the in-page usage readout. Two looks, chosen on the Settings
+// content.js: the in-page usage readout. Two looks, chosen on the Settings
 // page and stored in cub_design:
 //   Design 1 ("1", default): a slim full-width bar under the composer.
 //   Design 2 ("2"): a compact widget tucked into the composer toolbar, between
@@ -108,7 +108,7 @@
   // the Claude Code app on /code). From the bottom-most input, walk up while each
   // parent only wraps the input line (same height). A horizontal row (input beside
   // a send button) never adds height, so we skip past it; we stop at the first
-  // composer-width parent that is TALLER — the vertical stack that also holds the
+  // composer-width parent that is TALLER, the vertical stack that also holds the
   // toolbar. Inserting the bar after `node` there makes it a full-width row between
   // the input and the toolbar, so it can never land beside/over the input.
   function findComposer(){

@@ -1,4 +1,4 @@
-// background.js — keyboard shortcut + toolbar-icon badge.
+// background.js: keyboard shortcut + toolbar-icon badge.
 //
 // Badge: mirrors one usage window onto the extension icon, colored the same as
 // the in-page bar, so the user can read their usage at a glance without opening

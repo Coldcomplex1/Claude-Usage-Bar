@@ -1,4 +1,4 @@
-/* options.css — the Settings page. Shares the popup's visual language
+/* options.css: the Settings page. Shares the popup's visual language
    (toggle switch, buttons, account-scan list) in a wider tabbed layout. */
 * { box-sizing: border-box; }
 body {
