@@ -1,4 +1,4 @@
-// options.js — the Settings page: master on/off, toolbar-badge options,
+// options.js: the Settings page. Master on/off, toolbar-badge options,
 // account switch, and the hotkey. Shares CUB (usage.js) with the popup.
 var TOGGLE_KEY = "cub_enabled";
 var LAST_KEY = "cub_last";

@@ -1,4 +1,4 @@
-/* content.css — slim usage bar. Each metric is a 4-column grid so the bar,
+/* content.css: slim usage bar. Each metric is a 4-column grid so the bar,
    the % and the reset time line up in their own columns across every row. */
 
 #cub-bar.cub-bar {
@@ -52,17 +52,17 @@
    claude.ai's styles don't leak in (or out). Session reads as a value + mini-bar;
    the weekly windows read as a ring + value. */
 #cub-inline.cub-inline {
-  display: inline-flex; align-items: center; gap: 12px; flex: 0 0 auto;
+  display: inline-flex; align-items: center; gap: 14px; flex: 0 0 auto;
   margin: 0 10px; vertical-align: middle;
   font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
   font-size: 12px; line-height: 1; color: #3d3d3a;
 }
-#cub-inline .cub-i-seg { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+#cub-inline .cub-i-seg { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
 #cub-inline .cub-i-seg[hidden] { display: none; }
 #cub-inline .cub-i-val { font-weight: 600; font-variant-numeric: tabular-nums; }
 
 #cub-inline .cub-i-bar {
-  display: inline-block; width: 46px; height: 4px; border-radius: 999px;
+  display: inline-block; width: 80px; height: 5px; border-radius: 999px;
   background: rgba(0, 0, 0, 0.12); overflow: hidden;
 }
 #cub-inline .cub-i-fill {

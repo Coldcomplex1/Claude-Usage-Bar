@@ -1,4 +1,4 @@
-// usage.js — shared helpers for Claude's internal usage endpoint.
+// usage.js: shared helpers for Claude's internal usage endpoint.
 // Loaded by both the content script (same-origin on claude.ai) and the popup.
 //
 // Endpoints (undocumented, can change):
@@ -11,7 +11,7 @@
 
 var CUB = (function () {
   var AUTO_KEY = "cub_org";          // {id,name,ts} auto-detected
-  var MANUAL_KEY = "cub_org_manual"; // user-chosen uuid (string) — wins over auto
+  var MANUAL_KEY = "cub_org_manual"; // user-chosen uuid (string), wins over auto
   var ORG_TTL_MS = 6 * 60 * 60 * 1000;
   var API = "https://claude.ai/api";
 
