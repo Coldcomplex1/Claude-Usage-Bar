@@ -2,7 +2,7 @@
    the % and the reset time line up in their own columns across every row. */
 
 #cub-bar.cub-bar {
-  box-sizing: border-box; width: 100%; margin: 8px auto 0; padding: 9px 14px;
+  box-sizing: border-box; width: 100%; margin: 14px auto 0; padding: 9px 14px;
   display: flex; flex-direction: column; gap: 8px;
   font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
   font-size: 12px; line-height: 1.2; color: #3d3d3a;
@@ -53,7 +53,7 @@
    the weekly windows read as a ring + value. */
 #cub-inline.cub-inline {
   display: inline-flex; align-items: center; gap: 14px; flex: 0 0 auto;
-  margin: 0 10px; vertical-align: middle;
+  align-self: center; margin: 0 10px; vertical-align: middle;
   font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
   font-size: 12px; line-height: 1; color: #3d3d3a;
 }
