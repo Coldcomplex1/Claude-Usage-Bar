@@ -78,9 +78,9 @@
   }
 
   // The Claude Code web app (/code) is a separate React surface with no stable
-  // chat composer. Injecting under it lost a placement war with React (the bar
-  // flickered on and off), and pinning it to the viewport covered the composer.
-  // There's nowhere safe to place it there, so we keep the bar off /code.
+  // chat composer to sit under: injecting inline lost a placement war with React
+  // (the bar flickered on and off). So on /code we float the bar in a fixed spot,
+  // docked to the bottom-left corner where it stays clear of the composer.
   function isCodeRoute(){
     var p = location.pathname;
     return p === "/code" || p.indexOf("/code/") === 0;
@@ -99,9 +99,16 @@
 
   function ensurePlaced(){
     if (!enabled){ if (barEl && barEl.isConnected) barEl.remove(); return; }
-    // On /code there's no safe spot for the bar, so keep it out of the DOM.
-    if (isCodeRoute()){ if (barEl && barEl.isConnected) barEl.remove(); return; }
     if (!barEl) barEl = buildBar();
+    // On /code: float in a fixed corner (append to body once — React can't tear
+    // it out there) so it stays visible without flickering or covering the input.
+    if (isCodeRoute()){
+      barEl.classList.add("cub-fixed", "cub-code");
+      if (barEl.parentElement !== document.body) document.body.appendChild(barEl);
+      applyAndRender();
+      return;
+    }
+    barEl.classList.remove("cub-code");
     var composer = findComposer();
     if (composer && composer.parentElement){
       var correct = barEl.parentElement === composer.parentElement && barEl.previousElementSibling === composer;

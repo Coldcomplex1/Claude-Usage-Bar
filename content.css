@@ -14,6 +14,12 @@
   position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
   width: min(680px, 92vw); margin: 0; box-shadow: 0 6px 24px rgba(0,0,0,0.14);
 }
+/* /code (Claude Code web): dock to the bottom-left corner so the floating bar
+   never sits over the centered composer, and layer it above the app UI. */
+#cub-bar.cub-bar.cub-fixed.cub-code {
+  left: 16px; right: auto; bottom: 16px; transform: none;
+  width: min(320px, 42vw); z-index: 2147483000;
+}
 
 #cub-bar .cub-seg {
   display: grid;
