@@ -35,14 +35,19 @@ Works on any Chromium browser (Chrome, Edge, Brave, Arc, Opera).
 
 ## Using it
 
-- The toolbar icon shows a badge with your highest current usage (e.g. `44`),
-  colored blue/orange/red as it climbs — a glance, no clicks. It follows the
-  master on/off and clears when the bar is off.
-- Click the toolbar icon for the popup: master on/off, "Show in bar" (Session /
-  All models), account switch, and the hotkey.
+- Click the toolbar icon for the popup: your usage readout, "Show in bar"
+  (Session / All models), a Refresh button, and a Settings button.
+- Everything else lives on the Settings page (the Settings button, or right-click
+  the icon → Options):
+  - Master on/off for the bar.
+  - Toolbar-icon badge — a colored usage number on the extension icon so you can
+    read it at a glance. Off by default; when on, choose whether it shows your
+    session (5h), weekly all-models (7d), or the higher of the two.
+  - Account switch (for multi-org accounts) and "Use automatic" to undo it.
+  - The show/hide hotkey.
 - Hotkey to show/hide the bar: `Ctrl/Cmd + Shift + U`. Rebind at
   `chrome://extensions/shortcuts`.
-- If the bar ever shows 0% on a multi-org account, open the popup → change → pick
+- If the bar ever shows 0% on a multi-org account, open Settings → Change → pick
   the account with your real usage.
 
 ## Permissions

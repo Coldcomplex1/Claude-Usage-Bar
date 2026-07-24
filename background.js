@@ -1,40 +1,42 @@
 // background.js — keyboard shortcut + toolbar-icon badge.
 //
-// Badge: mirrors the highest of the three usage windows (session / all models /
-// Opus) onto the extension icon, colored the same as the in-page bar, so the
-// user can read their usage at a glance without opening the popup or a claude.ai
-// tab. It reflects the latest numbers stored by the content script or popup
-// (cub_last); when the bar is turned off (cub_enabled === false) it clears too.
+// Badge: mirrors one usage window onto the extension icon, colored the same as
+// the in-page bar, so the user can read their usage at a glance without opening
+// the popup or a claude.ai tab. Which window (and whether the badge shows at
+// all) is configured on the Settings page and stored in cub_badge; the numbers
+// come from cub_last, written by the content script and popup. Off by default.
 //
 // The content script reacts to the cub_enabled storage change to show/hide the bar.
 
 var TOGGLE_KEY = "cub_enabled";
 var LAST_KEY = "cub_last";
+var BADGE_KEY = "cub_badge";
+var DEFAULT_BADGE = { enabled: false, source: "session" };
 
 // Thresholds/colors match the in-page bar in content.css: blue < 30%,
 // Claude orange 30–80%, red > 80%.
 var BADGE_LOW = "#378add", BADGE_MID = "#d85a30", BADGE_HIGH = "#e2564d";
 function badgeColor(pct){ return pct > 80 ? BADGE_HIGH : pct >= 30 ? BADGE_MID : BADGE_LOW; }
 
-// Highest utilization across the windows we have data for (0–100), or null.
-function peakPct(data){
+function winPct(m){ return (m && m.available && m.pct != null) ? Math.round(m.pct) : null; }
+
+// The % the badge should show for the chosen source, or null if unavailable.
+function badgePct(data, source){
   if (!data) return null;
-  var peak = null;
-  ["session", "allModels", "opus"].forEach(function (k){
-    var m = data[k];
-    if (m && m.available && m.pct != null){
-      var p = Math.round(m.pct);
-      if (peak == null || p > peak) peak = p;
-    }
-  });
-  return peak;
+  if (source === "session") return winPct(data.session);
+  if (source === "allModels") return winPct(data.allModels);
+  // "highest": whichever of session / all-models we have data for.
+  var s = winPct(data.session), a = winPct(data.allModels);
+  if (s == null) return a;
+  if (a == null) return s;
+  return Math.max(s, a);
 }
 
 function clearBadge(){ chrome.action.setBadgeText({ text: "" }); }
 
-function renderBadge(enabled, data){
-  if (enabled === false) return clearBadge();
-  var pct = peakPct(data);
+function renderBadge(enabled, badge, data){
+  if (enabled === false || !badge.enabled) return clearBadge();
+  var pct = badgePct(data, badge.source);
   if (pct == null) return clearBadge();
   pct = Math.max(0, Math.min(100, pct));
   chrome.action.setBadgeText({ text: String(pct) });
@@ -45,8 +47,9 @@ function renderBadge(enabled, data){
 }
 
 function refreshBadge(){
-  chrome.storage.local.get([TOGGLE_KEY, LAST_KEY], function (o){
-    renderBadge(o[TOGGLE_KEY] !== false, o[LAST_KEY]);
+  chrome.storage.local.get([TOGGLE_KEY, LAST_KEY, BADGE_KEY], function (o){
+    var badge = Object.assign({}, DEFAULT_BADGE, o[BADGE_KEY] || {});
+    renderBadge(o[TOGGLE_KEY] !== false, badge, o[LAST_KEY]);
   });
 }
 
@@ -58,11 +61,11 @@ chrome.commands.onCommand.addListener(function (command) {
   });
 });
 
-// New usage numbers (from the content script or popup) or a master-toggle flip
-// both wake the service worker here and repaint the badge.
+// New usage numbers (cub_last), a master-toggle flip, or a badge-settings change
+// all wake the service worker here and repaint the badge.
 chrome.storage.onChanged.addListener(function (changes, area){
   if (area !== "local") return;
-  if (changes[LAST_KEY] || changes[TOGGLE_KEY]) refreshBadge();
+  if (changes[LAST_KEY] || changes[TOGGLE_KEY] || changes[BADGE_KEY]) refreshBadge();
 });
 
 chrome.runtime.onInstalled.addListener(refreshBadge);
