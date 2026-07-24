@@ -330,9 +330,23 @@
       if (!parent.isConnected) return;         // toolbar replaced → let the poll re-acquire
       if (!inlineReinsertAllowed()) return;    // thrashing → back off
       var plus = findPlusButton();
-      if (plus && plus.parentElement === parent){ plus.insertAdjacentElement("afterend", inlineEl); renderInline(); }
+      if (plus && plus.parentElement === parent){ plus.insertAdjacentElement("afterend", inlineEl); alignInline(plus); renderInline(); }
     });
     inlineObserver.observe(parent, { childList: true });
+  }
+
+  // Vertically center the widget on the "+" button, whatever the toolbar's own
+  // alignment happens to be (CSS align-self can't help when we don't control the
+  // parent). Clear our transform first so the read is clean, then shift the widget
+  // by the difference between the two boxes' centers.
+  function alignInline(plus){
+    if (!inlineEl || !inlineEl.isConnected || !plus) return;
+    inlineEl.style.transform = "none";
+    var p = plus.getBoundingClientRect();
+    var w = inlineEl.getBoundingClientRect();
+    if (!p.height || !w.height){ inlineEl.style.transform = ""; return; }
+    var delta = (p.top + p.height / 2) - (w.top + w.height / 2);
+    inlineEl.style.transform = Math.abs(delta) > 0.5 ? "translateY(" + delta.toFixed(1) + "px)" : "";
   }
 
   function placeInline(){
@@ -342,6 +356,7 @@
       var parent = plus.parentElement;
       var correct = inlineEl.parentElement === parent && inlineEl.previousElementSibling === plus;
       if (!correct) plus.insertAdjacentElement("afterend", inlineEl);
+      alignInline(plus);
       watchToolbar(parent);
     } else {
       // Inline-only: with no toolbar to sit in, show nothing and retry next tick.
