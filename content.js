@@ -80,8 +80,8 @@
 
   // The chat input differs across surfaces (contenteditable on /new & chats, and
   // the Claude Code app on /code). Pick the bottom-most visible input on the page
-  // — the composer always sits at the bottom — then walk up to its container so
-  // the bar lands inside the composer box, the same on every surface.
+  // — the composer always sits at the bottom — then find the row after which the
+  // bar should go so it lands below the input and above the toolbar on every surface.
   function findComposer(){
     var nodes = document.querySelectorAll('div[contenteditable="true"], p[contenteditable="true"], textarea');
     var editor = null, bestBottom = -Infinity;
@@ -93,12 +93,24 @@
       if (r.bottom > bestBottom){ bestBottom = r.bottom; editor = n; }
     }
     if (!editor) return null;
-    var node = editor;
-    for (var j=0; j<6 && node.parentElement; j++){
-      node = node.parentElement;
-      if (node.getBoundingClientRect().width >= 320) return node;
+    // Walk up while each parent only wraps the input line (same height). A
+    // horizontal row (input beside a send button) never adds height, so we skip
+    // past it; we stop at the first composer-width parent that is TALLER — the
+    // vertical stack that also holds the toolbar. Inserting the bar after `node`
+    // there makes it a full-width row between the input and the toolbar, so it
+    // can never land beside/over the input (that was the /code overlap bug).
+    var node = editor, firstWide = null;
+    for (var j=0; j<8; j++){
+      var parent = node.parentElement;
+      if (!parent) break;
+      var pr = parent.getBoundingClientRect();
+      if (pr.width >= 320){
+        if (!firstWide) firstWide = node;
+        if (pr.height > node.getBoundingClientRect().height + 12) return node;
+      }
+      node = parent;
     }
-    return editor.parentElement;
+    return firstWide || editor.parentElement;
   }
 
   function insertInline(composer){
