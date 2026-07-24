@@ -36,6 +36,35 @@ body {
 .o-radio { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; cursor: pointer; }
 .o-radio input { accent-color: #d85a30; width: 15px; height: 15px; cursor: pointer; }
 
+/* Design chooser: two illustrated option cards. The selected card gets the
+   orange accent already used by the toggle and radios. */
+.o-designs { display: flex; gap: 12px; margin-top: 12px; }
+.o-design { flex: 1; min-width: 0; cursor: pointer; }
+.o-design input { position: absolute; opacity: 0; width: 0; height: 0; }
+.o-design-card {
+  border: 1.5px solid rgba(0,0,0,0.12); border-radius: 10px; padding: 10px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.o-design:hover .o-design-card { border-color: rgba(0,0,0,0.22); }
+.o-design input:checked + .o-design-card { border-color: #d85a30; background: rgba(216,90,48,0.06); }
+.o-design input:focus-visible + .o-design-card { outline: 2px solid #d85a30; outline-offset: 2px; }
+.o-design-name { font-weight: 600; margin-top: 8px; }
+.o-design-desc { font-size: 11px; opacity: 0.6; margin-top: 1px; }
+
+/* Self-contained mockups of each layout (no external assets). */
+.o-design-illus {
+  height: 60px; border-radius: 8px; background: #f1f0ec; padding: 10px;
+  display: flex; flex-direction: column; justify-content: center; gap: 6px; overflow: hidden;
+}
+.o-illus-composer { background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; }
+.o-illus-1 .o-illus-composer { height: 22px; }
+.o-illus-1 .o-illus-bar { height: 6px; border-radius: 999px; background: linear-gradient(90deg, #d85a30 62%, rgba(0,0,0,0.12) 62%); }
+.o-illus-2 .o-illus-composer { height: 40px; display: flex; align-items: flex-end; padding: 5px; }
+.o-illus-2 .o-illus-toolbar { display: flex; align-items: center; gap: 4px; width: 100%; }
+.o-illus-2 .o-illus-plus { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,0.32); }
+.o-illus-2 .o-illus-pill { width: 26px; height: 7px; border-radius: 999px; background: linear-gradient(90deg, #d85a30 60%, rgba(0,0,0,0.15) 60%); }
+.o-illus-2 .o-illus-chip { margin-left: auto; width: 22px; height: 9px; border-radius: 3px; background: rgba(0,0,0,0.14); }
+
 .p-btn { border: 1px solid rgba(0,0,0,0.12); background: #fff; color: inherit; font-size: 12px; padding: 5px 12px; border-radius: 7px; cursor: pointer; }
 .p-btn:hover { background: #f0efeb; }
 .p-link { border: none; background: none; padding: 0; font-size: 12px; color: #d85a30; cursor: pointer; opacity: 0.85; text-decoration: none; }
@@ -63,4 +92,11 @@ body {
   .p-btn:hover { background: #3d3d3a; }
   .p-org { border-color: rgba(255,255,255,0.14); }
   .p-kbd { border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.05); }
+  .o-design-card { border-color: rgba(255,255,255,0.14); }
+  .o-design:hover .o-design-card { border-color: rgba(255,255,255,0.26); }
+  .o-design input:checked + .o-design-card { border-color: #d85a30; background: rgba(216,90,48,0.16); }
+  .o-design-illus { background: #232320; }
+  .o-illus-composer { background: #3a3a37; border-color: rgba(255,255,255,0.14); }
+  .o-illus-2 .o-illus-plus { border-color: rgba(255,255,255,0.4); }
+  .o-illus-2 .o-illus-chip { background: rgba(255,255,255,0.18); }
 }

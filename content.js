@@ -1,30 +1,58 @@
-// content.js — slim usage bar under the composer. Session + All models are
-// user-toggleable; Opus shows automatically only if the account has it.
-// Each metric is a grid row so the bar, the % and the reset line up in columns.
-// Colors: blue < 30%, Claude orange 30-80%, red > 80%.
+// content.js — the in-page usage readout. Two looks, chosen on the Settings
+// page and stored in cub_design:
+//   Design 1 ("1", default): a slim full-width bar under the composer.
+//   Design 2 ("2"): a compact widget tucked into the composer toolbar, between
+//                   the "+" button and the model picker.
+// Session + All models are user-toggleable; Opus shows automatically only if the
+// account has it. Colors: blue < 30%, Claude orange 30-80%, red > 80%.
 
 (function () {
   var TOGGLE_KEY = "cub_enabled";
   var LAST_KEY = "cub_last";
   var SHOW_KEY = "cub_show";
+  var DESIGN_KEY = "cub_design";
   var POLL_MS = 60000;
   var PLACE_MS = 800;
 
-  var barEl = null, enabled = true, lastData = null, pollTimer = null, placeTimer = null;
-  var placeObserver = null, observedParent = null, observedComposer = null, reinserts = [];
+  var enabled = true, lastData = null, pollTimer = null, placeTimer = null;
   var show = { session: true, allModels: true };
+  var design = "1";
 
+  // session/opus use a bar in Design 1; in Design 2 the weekly windows use a ring.
   var SEGS = [
-    { key: "session",   label: "Session",    sub: "5h", opus: false, tip: "Current rolling 5-hour session" },
-    { key: "allModels", label: "All models", sub: "7d", opus: false, tip: "Weekly usage, across all models" },
-    { key: "opus",      label: "Opus",       sub: "7d", opus: true,  tip: "Weekly Opus allowance" }
+    { key: "session",   label: "Session",    sub: "5h", opus: false, ring: false, tip: "Current rolling 5-hour session" },
+    { key: "allModels", label: "All models", sub: "7d", opus: false, ring: true,  tip: "Weekly usage, across all models" },
+    { key: "opus",      label: "Opus",       sub: "7d", opus: true,  ring: true,  tip: "Weekly Opus allowance" }
   ];
+
+  function colorClass(p){ return p > 80 ? "cub-high" : p >= 30 ? "cub-mid" : "cub-low"; }
+
+  // Find the composer input: the bottom-most visible, non-tiny editor on the page
+  // (the composer always sits at the bottom). Shared by both designs.
+  function findEditor(){
+    var nodes = document.querySelectorAll('div[contenteditable="true"], p[contenteditable="true"], textarea');
+    var editor = null, bestBottom = -Infinity;
+    for (var i=0; i<nodes.length; i++){
+      var n = nodes[i];
+      if (!n.offsetParent && n.getClientRects().length === 0) continue; // hidden
+      var r = n.getBoundingClientRect();
+      if (r.width < 120 || r.height === 0) continue;                    // tiny/collapsed
+      if (r.bottom > bestBottom){ bestBottom = r.bottom; editor = n; }
+    }
+    return editor;
+  }
+
+  // ===================================================================
+  // Design 1: slim full-width bar under the composer.
+  // ===================================================================
+  var barEl = null;
+  var barObserver = null, barObservedParent = null, barObservedComposer = null, barReinserts = [];
 
   function segHtml(s){
     return '<div class="cub-seg" role="img" data-seg="'+s.key+'" title="'+s.tip+'">'+
       '<span class="cub-label"><span class="cub-name">'+s.label+'</span> <span class="cub-sub">'+s.sub+'</span></span>'+
       '<span class="cub-track"><span class="cub-fill"></span></span>'+
-      '<span class="cub-val">\u2013</span>'+
+      '<span class="cub-val">–</span>'+
       '<span class="cub-reset"></span>'+
     '</div>';
   }
@@ -36,14 +64,12 @@
     return bar;
   }
 
-  function colorClass(p){ return p > 80 ? "cub-high" : p >= 30 ? "cub-mid" : "cub-low"; }
-
   function fillSeg(node, d, label){
     var val = node.querySelector(".cub-val");
     var fill = node.querySelector(".cub-fill");
     var reset = node.querySelector(".cub-reset");
     if (!d || !d.available || d.pct == null){
-      val.textContent = "\u2013"; fill.style.width = "0%"; fill.className = "cub-fill"; reset.textContent = "";
+      val.textContent = "–"; fill.style.width = "0%"; fill.className = "cub-fill"; reset.textContent = "";
       node.setAttribute("aria-label", label + ": no data");
       return;
     }
@@ -56,7 +82,7 @@
     node.setAttribute("aria-label", label + ": " + pct + "% used" + (r ? ", resets in " + r : ""));
   }
 
-  function applyAndRender(){
+  function renderBar(){
     if (!barEl) return;
     var any = false;
     SEGS.forEach(function(s){
@@ -70,7 +96,7 @@
     barEl.style.display = any ? "" : "none";
   }
 
-  function markError(){
+  function markErrorBar(){
     if (!barEl) return;
     SEGS.forEach(function(s){
       var node = barEl.querySelector('[data-seg="'+s.key+'"]');
@@ -79,26 +105,15 @@
   }
 
   // The chat input differs across surfaces (contenteditable on /new & chats, and
-  // the Claude Code app on /code). Pick the bottom-most visible input on the page
-  // — the composer always sits at the bottom — then find the row after which the
-  // bar should go so it lands below the input and above the toolbar on every surface.
+  // the Claude Code app on /code). From the bottom-most input, walk up while each
+  // parent only wraps the input line (same height). A horizontal row (input beside
+  // a send button) never adds height, so we skip past it; we stop at the first
+  // composer-width parent that is TALLER — the vertical stack that also holds the
+  // toolbar. Inserting the bar after `node` there makes it a full-width row between
+  // the input and the toolbar, so it can never land beside/over the input.
   function findComposer(){
-    var nodes = document.querySelectorAll('div[contenteditable="true"], p[contenteditable="true"], textarea');
-    var editor = null, bestBottom = -Infinity;
-    for (var i=0; i<nodes.length; i++){
-      var n = nodes[i];
-      if (!n.offsetParent && n.getClientRects().length === 0) continue; // hidden
-      var r = n.getBoundingClientRect();
-      if (r.width < 120 || r.height === 0) continue;                    // tiny/collapsed
-      if (r.bottom > bestBottom){ bestBottom = r.bottom; editor = n; }
-    }
+    var editor = findEditor();
     if (!editor) return null;
-    // Walk up while each parent only wraps the input line (same height). A
-    // horizontal row (input beside a send button) never adds height, so we skip
-    // past it; we stop at the first composer-width parent that is TALLER — the
-    // vertical stack that also holds the toolbar. Inserting the bar after `node`
-    // there makes it a full-width row between the input and the toolbar, so it
-    // can never land beside/over the input (that was the /code overlap bug).
     var node = editor, firstWide = null;
     for (var j=0; j<8; j++){
       var parent = node.parentElement;
@@ -113,55 +128,228 @@
     return firstWide || editor.parentElement;
   }
 
-  function insertInline(composer){
+  function insertBar(composer){
     composer.insertAdjacentElement("afterend", barEl);
     barEl.classList.remove("cub-fixed");
   }
 
   // Allow bursts of re-insertion but back off if a surface fights us every frame,
   // so we never spin in a tight loop against React (the poll re-acquires instead).
-  function reinsertAllowed(){
+  function barReinsertAllowed(){
     var now = Date.now();
-    reinserts.push(now);
-    while (reinserts.length && now - reinserts[0] > 1000) reinserts.shift();
-    return reinserts.length <= 5;
+    barReinserts.push(now);
+    while (barReinserts.length && now - barReinserts[0] > 1000) barReinserts.shift();
+    return barReinserts.length <= 5;
   }
 
-  function stopWatching(){
-    if (placeObserver) placeObserver.disconnect();
-    placeObserver = null; observedParent = null; observedComposer = null;
+  function stopBarWatching(){
+    if (barObserver) barObserver.disconnect();
+    barObserver = null; barObservedParent = null; barObservedComposer = null;
   }
 
   // Watch the composer's parent so that if a re-render detaches the bar we put it
-  // back synchronously (before paint) instead of waiting for the 800ms poll —
-  // that gap is what made the bar flicker on and off on /code.
-  function watchParent(parent, composer){
-    if (observedParent === parent && observedComposer === composer) return;
-    stopWatching();
-    observedParent = parent; observedComposer = composer;
-    placeObserver = new MutationObserver(function(){
-      if (!enabled || !barEl || barEl.isConnected) return;
+  // back synchronously (before paint) instead of waiting for the 800ms poll.
+  function watchBarParent(parent, composer){
+    if (barObservedParent === parent && barObservedComposer === composer) return;
+    stopBarWatching();
+    barObservedParent = parent; barObservedComposer = composer;
+    barObserver = new MutationObserver(function(){
+      if (!enabled || design !== "1" || !barEl || barEl.isConnected) return;
       if (!composer.isConnected) return;      // composer replaced → let the poll re-acquire
-      if (!reinsertAllowed()) return;         // thrashing → back off
-      insertInline(composer);
-      applyAndRender();
+      if (!barReinsertAllowed()) return;      // thrashing → back off
+      insertBar(composer);
+      renderBar();
     });
-    placeObserver.observe(parent, { childList: true });
+    barObserver.observe(parent, { childList: true });
   }
 
-  function ensurePlaced(){
-    if (!enabled){ if (barEl && barEl.isConnected) barEl.remove(); return; }
+  function placeBar(){
     if (!barEl) barEl = buildBar();
     var composer = findComposer();
     if (composer && composer.parentElement){
       var correct = barEl.parentElement === composer.parentElement && barEl.previousElementSibling === composer;
-      if (!correct) insertInline(composer);
-      watchParent(composer.parentElement, composer);
+      if (!correct) insertBar(composer);
+      watchBarParent(composer.parentElement, composer);
     } else {
-      stopWatching();
+      stopBarWatching();
       if (!barEl.isConnected){ barEl.classList.add("cub-fixed"); document.body.appendChild(barEl); }
     }
-    applyAndRender();
+    renderBar();
+  }
+
+  // ===================================================================
+  // Design 2: compact widget inside the composer toolbar.
+  // ===================================================================
+  var inlineEl = null;
+  var inlineObserver = null, inlineObservedToolbar = null, inlineReinserts = [];
+  var RING_C = 2 * Math.PI * 8; // circumference of the r=8 ring
+
+  function inlineSegHtml(s){
+    var indicator = s.ring
+      ? '<span class="cub-i-ring">'+
+          '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">'+
+            '<circle class="cub-i-ring-bg" cx="10" cy="10" r="8"></circle>'+
+            '<circle class="cub-i-ring-fill" cx="10" cy="10" r="8"></circle>'+
+          '</svg>'+
+        '</span>'
+      : '<span class="cub-i-bar"><span class="cub-i-fill"></span></span>';
+    var val = '<span class="cub-i-val">–</span>';
+    // Bar window reads value-then-bar; ring windows read ring-then-value.
+    var inner = s.ring ? (indicator + val) : (val + indicator);
+    return '<span class="cub-i-seg" role="img" data-seg="'+s.key+'" title="'+s.tip+'">'+ inner +'</span>';
+  }
+
+  function buildInline(){
+    var el = document.createElement("div");
+    el.id = "cub-inline"; el.className = "cub-inline";
+    el.innerHTML = SEGS.map(inlineSegHtml).join("");
+    return el;
+  }
+
+  function fillInlineSeg(node, d, s){
+    var val = node.querySelector(".cub-i-val");
+    if (!d || !d.available || d.pct == null){
+      val.textContent = "–";
+      if (s.ring){
+        var rf0 = node.querySelector(".cub-i-ring-fill");
+        rf0.style.strokeDasharray = RING_C; rf0.style.strokeDashoffset = RING_C; rf0.setAttribute("class", "cub-i-ring-fill");
+      } else {
+        var f0 = node.querySelector(".cub-i-fill");
+        f0.style.width = "0%"; f0.className = "cub-i-fill";
+      }
+      node.setAttribute("aria-label", s.label + ": no data");
+      node.setAttribute("title", s.label + " (" + s.sub + "): no data");
+      return;
+    }
+    var pct = Math.max(0, Math.min(100, Math.round(d.pct)));
+    var r = pct > 0 ? CUB.fmtReset(d.resetAt) : "";
+    var cc = colorClass(pct);
+    val.textContent = pct + "%";
+    if (s.ring){
+      var rf = node.querySelector(".cub-i-ring-fill");
+      rf.style.strokeDasharray = RING_C;
+      rf.style.strokeDashoffset = RING_C * (1 - pct / 100);
+      rf.setAttribute("class", "cub-i-ring-fill " + cc);
+    } else {
+      var f = node.querySelector(".cub-i-fill");
+      f.style.width = pct + "%";
+      f.className = "cub-i-fill " + cc;
+    }
+    node.setAttribute("aria-label", s.label + ": " + pct + "% used" + (r ? ", resets in " + r : ""));
+    node.setAttribute("title", s.label + " (" + s.sub + "): " + pct + "%" + (r ? ", resets in " + r : ""));
+  }
+
+  function renderInline(){
+    if (!inlineEl) return;
+    var any = false;
+    SEGS.forEach(function(s){
+      var node = inlineEl.querySelector('[data-seg="'+s.key+'"]');
+      if (!node) return;
+      var d = lastData ? lastData[s.key] : null;
+      var canShow = s.opus ? !!(d && d.available) : (show[s.key] !== false);
+      node.hidden = !canShow;
+      if (canShow){ any = true; fillInlineSeg(node, d, s); }
+    });
+    inlineEl.style.display = any ? "" : "none";
+  }
+
+  function markErrorInline(){
+    if (!inlineEl) return;
+    SEGS.forEach(function(s){
+      var node = inlineEl.querySelector('[data-seg="'+s.key+'"]');
+      if (node && !node.hidden) node.querySelector(".cub-i-val").textContent = "!";
+    });
+  }
+
+  // Find the toolbar's "+" button: within the composer stack, take the bottom-most
+  // row of buttons (the toolbar) and pick the left-most one. Purely geometric, so
+  // it survives claude.ai's class/label churn like the bar placement does.
+  function findPlusButton(){
+    var composer = findComposer();
+    var stack = composer && composer.parentElement;
+    if (!stack) return null;
+    var btns = [];
+    stack.querySelectorAll("button").forEach(function(b){
+      if (!b.offsetParent && b.getClientRects().length === 0) return; // hidden
+      var r = b.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) return;
+      btns.push({ el: b, r: r });
+    });
+    if (btns.length < 2) return null;
+    var maxBottom = Math.max.apply(null, btns.map(function(x){ return x.r.bottom; }));
+    var row = btns.filter(function(x){ return maxBottom - x.r.bottom <= 14; }); // bottom-most row
+    if (row.length < 2) return null;
+    row.sort(function(a, b){ return a.r.left - b.r.left; });
+    return row[0].el; // left-most = the "+"
+  }
+
+  function inlineReinsertAllowed(){
+    var now = Date.now();
+    inlineReinserts.push(now);
+    while (inlineReinserts.length && now - inlineReinserts[0] > 1000) inlineReinserts.shift();
+    return inlineReinserts.length <= 5;
+  }
+
+  function stopInlineWatching(){
+    if (inlineObserver) inlineObserver.disconnect();
+    inlineObserver = null; inlineObservedToolbar = null;
+  }
+
+  // Re-insert the widget after the "+" if a re-render detaches it, mirroring the
+  // bar's watcher and its back-off.
+  function watchToolbar(parent){
+    if (inlineObservedToolbar === parent) return;
+    stopInlineWatching();
+    inlineObservedToolbar = parent;
+    inlineObserver = new MutationObserver(function(){
+      if (!enabled || design !== "2" || !inlineEl || inlineEl.isConnected) return;
+      if (!parent.isConnected) return;         // toolbar replaced → let the poll re-acquire
+      if (!inlineReinsertAllowed()) return;    // thrashing → back off
+      var plus = findPlusButton();
+      if (plus && plus.parentElement === parent){ plus.insertAdjacentElement("afterend", inlineEl); renderInline(); }
+    });
+    inlineObserver.observe(parent, { childList: true });
+  }
+
+  function placeInline(){
+    if (!inlineEl) inlineEl = buildInline();
+    var plus = findPlusButton();
+    if (plus && plus.parentElement){
+      var parent = plus.parentElement;
+      var correct = inlineEl.parentElement === parent && inlineEl.previousElementSibling === plus;
+      if (!correct) plus.insertAdjacentElement("afterend", inlineEl);
+      watchToolbar(parent);
+    } else {
+      // Inline-only: with no toolbar to sit in, show nothing and retry next tick.
+      stopInlineWatching();
+      if (inlineEl.isConnected) inlineEl.remove();
+    }
+    renderInline();
+  }
+
+  // ===================================================================
+  // Shared: dispatch by active design, polling, enable/disable.
+  // ===================================================================
+  function render(){ design === "2" ? renderInline() : renderBar(); }
+  function markError(){ design === "2" ? markErrorInline() : markErrorBar(); }
+
+  function removeWidgets(){
+    stopBarWatching();
+    stopInlineWatching();
+    if (barEl && barEl.isConnected) barEl.remove();
+    if (inlineEl && inlineEl.isConnected) inlineEl.remove();
+  }
+
+  function place(){
+    if (!enabled){ removeWidgets(); return; }
+    design === "2" ? placeInline() : placeBar();
+  }
+
+  function switchDesign(next){
+    if (next === design) return;
+    removeWidgets();          // tear down the old look (widget + observer)
+    design = next;
+    if (enabled){ place(); render(); }
   }
 
   async function refresh(){
@@ -170,7 +358,7 @@
       var data = await CUB.getUsage();
       lastData = data;
       chrome.storage.local.set({ [LAST_KEY]: data });
-      applyAndRender();
+      render();
     } catch (e) { markError(); }
   }
 
@@ -181,25 +369,27 @@
   }
   function stopPolling(){ if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
 
-  function enable(){ enabled = true; ensurePlaced(); startPolling(); }
-  function disable(){ enabled = false; stopPolling(); stopWatching(); if (barEl && barEl.isConnected) barEl.remove(); }
+  function enable(){ enabled = true; place(); startPolling(); }
+  function disable(){ enabled = false; stopPolling(); removeWidgets(); }
 
   chrome.storage.onChanged.addListener(function (changes, area){
     if (area !== "local") return;
     if (changes[TOGGLE_KEY]) { changes[TOGGLE_KEY].newValue === false ? disable() : enable(); }
-    if (changes[LAST_KEY] && changes[LAST_KEY].newValue){ lastData = changes[LAST_KEY].newValue; if (enabled) applyAndRender(); }
-    if (changes[SHOW_KEY] && changes[SHOW_KEY].newValue){ show = Object.assign({ session:true, allModels:true }, changes[SHOW_KEY].newValue); if (enabled) applyAndRender(); }
+    if (changes[LAST_KEY] && changes[LAST_KEY].newValue){ lastData = changes[LAST_KEY].newValue; if (enabled) render(); }
+    if (changes[SHOW_KEY] && changes[SHOW_KEY].newValue){ show = Object.assign({ session:true, allModels:true }, changes[SHOW_KEY].newValue); if (enabled) render(); }
+    if (changes[DESIGN_KEY]) { switchDesign(changes[DESIGN_KEY].newValue === "2" ? "2" : "1"); }
   });
 
   document.addEventListener("visibilitychange", function(){
     if (document.visibilityState === "visible" && enabled) refresh();
   });
 
-  chrome.storage.local.get([TOGGLE_KEY, LAST_KEY, SHOW_KEY], function (o){
+  chrome.storage.local.get([TOGGLE_KEY, LAST_KEY, SHOW_KEY, DESIGN_KEY], function (o){
     if (o[LAST_KEY]) lastData = o[LAST_KEY];
     if (o[SHOW_KEY]) show = Object.assign(show, o[SHOW_KEY]);
+    design = o[DESIGN_KEY] === "2" ? "2" : "1";
     enabled = o[TOGGLE_KEY] !== false;
-    placeTimer = setInterval(ensurePlaced, PLACE_MS);
+    placeTimer = setInterval(place, PLACE_MS);
     if (enabled) startPolling();
   });
 })();
