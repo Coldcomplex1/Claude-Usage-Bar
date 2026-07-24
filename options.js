@@ -4,12 +4,23 @@ var TOGGLE_KEY = "cub_enabled";
 var LAST_KEY = "cub_last";
 var BADGE_KEY = "cub_badge";
 var MANUAL_KEY = "cub_org_manual";
+var DESIGN_KEY = "cub_design";
 var DEFAULT_BADGE = { enabled: false, source: "session" };
 
 // ---- Master on/off -------------------------------------------------------
 function loadToggle(){
   chrome.storage.local.get([TOGGLE_KEY], function(o){
     document.getElementById("toggle").checked = o[TOGGLE_KEY] !== false;
+  });
+}
+
+// ---- Design (bar vs inline) ----------------------------------------------
+function loadDesign(){
+  chrome.storage.local.get([DESIGN_KEY], function(o){
+    var d = o[DESIGN_KEY] === "2" ? "2" : "1";
+    document.querySelectorAll('input[name="design"]').forEach(function(r){
+      r.checked = r.value === d;
+    });
   });
 }
 
@@ -86,11 +97,12 @@ function loadHotkey(){
       var c = (cmds || []).find(function(x){ return x.name === "toggle-bar"; });
       document.getElementById("hk").textContent = (c && c.shortcut) ? c.shortcut : "not set";
     });
-  } catch (e){ document.getElementById("hk").textContent = "—"; }
+  } catch (e){ document.getElementById("hk").textContent = "not set"; }
 }
 
 document.addEventListener("DOMContentLoaded", function(){
   loadToggle();
+  loadDesign();
   loadBadge();
   loadHotkey();
 
@@ -101,6 +113,12 @@ document.addEventListener("DOMContentLoaded", function(){
 
   document.getElementById("toggle").addEventListener("change", function(e){
     chrome.storage.local.set({ [TOGGLE_KEY]: e.target.checked });
+  });
+
+  document.querySelectorAll('input[name="design"]').forEach(function(r){
+    r.addEventListener("change", function(){
+      if (r.checked) chrome.storage.local.set({ [DESIGN_KEY]: r.value });
+    });
   });
 
   document.getElementById("badge-enabled").addEventListener("change", function(e){

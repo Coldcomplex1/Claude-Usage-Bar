@@ -3,22 +3,56 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Claude Usage — Settings</title>
+    <title>Claude Usage Settings</title>
     <link rel="stylesheet" href="options.css" />
   </head>
   <body>
     <div class="o-wrap">
-      <h1 class="o-title">Claude Usage — Settings</h1>
+      <h1 class="o-title">Claude Usage Settings</h1>
 
       <section class="o-card">
         <div class="o-row">
           <div class="o-row-text">
-            <div class="o-row-label">Show the bar on claude.ai</div>
-            <div class="o-row-sub">The slim usage bar under the chat composer.</div>
+            <div class="o-row-label">Turn the extension on or off</div>
+            <div class="o-row-sub">Show your usage on claude.ai.</div>
           </div>
-          <label class="p-switch" title="Show the bar on claude.ai">
+          <label class="p-switch" title="Turn the extension on or off">
             <input type="checkbox" id="toggle" />
             <span class="p-slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <section class="o-card">
+        <div class="o-row-label">Design</div>
+        <div class="o-row-sub">Choose how your usage shows on claude.ai.</div>
+        <div class="o-designs">
+          <label class="o-design">
+            <input type="radio" name="design" value="1" />
+            <div class="o-design-card">
+              <div class="o-design-illus o-illus-1">
+                <div class="o-illus-composer"></div>
+                <div class="o-illus-bar"></div>
+              </div>
+              <div class="o-design-name">Design 1</div>
+              <div class="o-design-desc">Full bar under the chat</div>
+            </div>
+          </label>
+          <label class="o-design">
+            <input type="radio" name="design" value="2" />
+            <div class="o-design-card">
+              <div class="o-design-illus o-illus-2">
+                <div class="o-illus-composer">
+                  <div class="o-illus-toolbar">
+                    <span class="o-illus-plus"></span>
+                    <span class="o-illus-pill"></span>
+                    <span class="o-illus-chip"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="o-design-name">Design 2</div>
+              <div class="o-design-desc">Compact, in the toolbar</div>
+            </div>
           </label>
         </div>
       </section>
@@ -27,7 +61,7 @@
         <div class="o-row">
           <div class="o-row-text">
             <div class="o-row-label">Show usage on the toolbar icon</div>
-            <div class="o-row-sub">A colored number badge on the extension icon — a glance, no clicks.</div>
+            <div class="o-row-sub">A colored usage number on the extension icon, so you can read it at a glance.</div>
           </div>
           <label class="p-switch" title="Show usage on the toolbar icon">
             <input type="checkbox" id="badge-enabled" />
@@ -39,7 +73,7 @@
           <div class="o-row-sub o-suboption-label">Badge shows</div>
           <div class="o-radios">
             <label class="o-radio"><input type="radio" name="badge-source" value="session" /><span>Session (5h)</span></label>
-            <label class="o-radio"><input type="radio" name="badge-source" value="allModels" /><span>Weekly — all models (7d)</span></label>
+            <label class="o-radio"><input type="radio" name="badge-source" value="allModels" /><span>Weekly, all models (7d)</span></label>
             <label class="o-radio"><input type="radio" name="badge-source" value="highest" /><span>Highest of the two</span></label>
           </div>
         </div>
@@ -49,7 +83,7 @@
         <div class="o-row">
           <div class="o-row-text">
             <div class="o-row-label">Account</div>
-            <div class="o-row-sub"><span id="acct">—</span></div>
+            <div class="o-row-sub"><span id="acct">Loading…</span></div>
           </div>
           <div class="o-actions">
             <button id="auto" class="p-link" hidden>Use automatic</button>
