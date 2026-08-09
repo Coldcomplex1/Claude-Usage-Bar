@@ -36,6 +36,11 @@ already in your browser:
   the one with real usage; cached)
 - `GET /api/organizations/{id}/usage` → `five_hour`, `seven_day`, `seven_day_opus`
 
+The numbers refresh every five minutes in the background, so the toolbar badge and
+the popup are current even when no claude.ai tab is open. When a claude.ai tab is
+open the extension asks that tab to do the fetch; otherwise it calls the endpoint
+itself. An open, visible tab also refreshes its own bar every minute.
+
 Everything stays on your machine (`chrome.storage.local`). Nothing is sent to any
 third-party server.
 
@@ -71,6 +76,7 @@ Works on any Chromium browser (Chrome, Edge, Brave, Arc, Opera).
 
 - `storage`: saves your preferences and the last-seen numbers, locally.
 - host `https://claude.ai/*`: calls the usage endpoint with your existing session.
+- `alarms`: refreshes the numbers every five minutes so they are not stale.
 - `commands`: the show or hide keyboard shortcut.
 
 ## Publishing to the Chrome Web Store
