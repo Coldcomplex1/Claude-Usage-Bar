@@ -20,7 +20,14 @@ var CUB = (function () {
   function sdel(k){ return new Promise(function(r){ chrome.storage.local.remove(k, r); }); }
 
   async function fetchJson(url){
-    var res = await fetch(url, { credentials: "include", headers: { Accept: "application/json" } });
+    // Bounded so a hung request can't pin the service worker awake waiting for
+    // TCP to give up. An abort has no .code, so callers treat it as a generic
+    // failure: "!" in the bar, "Couldn't reach Claude" in the popup.
+    var res = await fetch(url, {
+      credentials: "include",
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(15000)
+    });
     if (res.status === 401 || res.status === 403){ var a=new Error("AUTH"); a.code="AUTH"; a.status=res.status; throw a; }
     if (!res.ok){ var h=new Error("HTTP_"+res.status); h.code="HTTP"; h.status=res.status; throw h; }
     return res.json();
