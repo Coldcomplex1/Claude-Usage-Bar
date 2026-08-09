@@ -12,7 +12,7 @@
 </head>
 <body>
   <h1>Privacy Policy for Claude Usage Bar</h1>
-  <p class="muted">Last updated: 17 June 2026</p>
+  <p class="muted">Last updated: 9 August 2026</p>
 
   <p>Claude Usage Bar is a browser extension that displays your Claude.ai usage
   limits (your current 5-hour session and weekly all-models usage, and an Opus
@@ -26,6 +26,10 @@
     <li>Your usage figures: utilization percentages and reset times for the
       5-hour, 7-day (all models), and Opus windows.</li>
   </ul>
+  <p>These reads happen roughly every five minutes for as long as the extension is
+  installed and enabled, including when no claude.ai tab is open, so that the
+  numbers you see are current rather than left over from your last visit. They
+  stop when you turn the extension off on its Settings page.</p>
 
   <h2>How the data is used and stored</h2>
   <p>This data is used only to render the usage bar and the extension’s popup. It is
@@ -49,6 +53,8 @@
     <li><code>storage</code>: saves your preferences and last-seen usage numbers locally.</li>
     <li>host access to <code>https://claude.ai/*</code>: reads your usage from your
       logged-in session. No other website is accessed.</li>
+    <li><code>alarms</code>: schedules the periodic refresh described above. It is a
+      timer only, and gives the extension no additional access to your data.</li>
     <li><code>commands</code>: the keyboard shortcut to show or hide the bar.</li>
   </ul>
 
