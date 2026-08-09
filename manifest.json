@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Claude Usage Bar",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "See your Claude.ai usage (5-hour session and weekly all-models) in a slim bar under the chat. No sign-in or tokens.",
-  "permissions": ["storage"],
+  "permissions": ["storage", "alarms"],
   "host_permissions": ["https://claude.ai/*"],
   "background": { "service_worker": "background.js" },
   "commands": {

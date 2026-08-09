@@ -1,4 +1,10 @@
-// background.js: keyboard shortcut + toolbar-icon badge.
+// background.js: keyboard shortcut + toolbar-icon badge + background refresh.
+//
+// Background refresh: the content script only polls while a claude.ai tab is
+// open AND visible, so with no tab around the numbers froze and the badge went
+// stale. A chrome.alarms heartbeat now refreshes them every few minutes,
+// preferring to delegate the fetch to an open tab (same-origin there) and
+// falling back to fetching from this worker when there is no tab to ask.
 //
 // Badge: mirrors one usage window onto the extension icon, colored the same as
 // the in-page bar, so the user can read their usage at a glance without opening
@@ -8,10 +14,21 @@
 //
 // The content script reacts to the cub_enabled storage change to show/hide the bar.
 
+importScripts("usage.js");   // classic service worker, so this gives us CUB.getUsage()
+
 var TOGGLE_KEY = "cub_enabled";
 var LAST_KEY = "cub_last";
 var BADGE_KEY = "cub_badge";
+var HEALTH_KEY = "cub_health";   // refresh bookkeeping/backoff; nothing renders it
 var DEFAULT_BADGE = { enabled: false, source: "session" };
+
+var ALARM = "cub-refresh";
+var PERIOD_MIN = 5;                        // how often we refresh in the background
+var FRESH_MS = 4 * 60 * 1000;              // someone refreshed this recently: skip
+var TAB_TIMEOUT_MS = 15000;                // a frozen tab must not stall the run
+var MAX_BACKOFF_MS = 30 * 60 * 1000;
+var DIRECT_BLOCK_MS = 6 * 60 * 60 * 1000;  // how long to stop fetching from here after 403s
+var refreshing = false;                    // reentrancy guard, per worker lifetime
 
 // Thresholds/colors match the in-page bar in content.css: blue < 30%,
 // Claude orange 30–80%, red > 80%.
@@ -68,8 +85,118 @@ chrome.storage.onChanged.addListener(function (changes, area){
   if (changes[LAST_KEY] || changes[TOGGLE_KEY] || changes[BADGE_KEY]) refreshBadge();
 });
 
-chrome.runtime.onInstalled.addListener(refreshBadge);
-chrome.runtime.onStartup.addListener(refreshBadge);
+// ---- Background refresh --------------------------------------------------
+
+function sget(keys){ return new Promise(function (r){ chrome.storage.local.get(keys, r); }); }
+function sset(o){ return new Promise(function (r){ chrome.storage.local.set(o, r); }); }
+
+// Create the alarm only when it is missing. This worker wakes on every cub_last
+// write, which a visible claude.ai tab does once a minute; an unguarded create()
+// would reset the schedule on each wake and the alarm would never fire at all.
+function ensureAlarm(){
+  chrome.alarms.get(ALARM, function (a){
+    if (!a) chrome.alarms.create(ALARM, { periodInMinutes: PERIOD_MIN, delayInMinutes: 1 });
+  });
+}
+
+// claude.ai tabs we can actually message, most-likely-alive first. Discarded
+// tabs have no content script. Filtering by url needs host permissions, which
+// we already have for claude.ai, so this costs no extra permission warning.
+function claudeTabs(){
+  return new Promise(function (resolve){
+    chrome.tabs.query({ url: "https://claude.ai/*" }, function (tabs){
+      if (chrome.runtime.lastError || !tabs) return resolve([]);
+      resolve(tabs.filter(function (t){ return t.id != null && !t.discarded; })
+                  .sort(function (a, b){ return (b.active ? 1 : 0) - (a.active ? 1 : 0); }));
+    });
+  });
+}
+
+// Never rejects. Covers a tab with no content script (the extension was reloaded
+// but the tab was not), a tab that never answers, and ordinary success/failure.
+function askTab(tabId){
+  return new Promise(function (resolve){
+    var settled = false;
+    var timer = setTimeout(function (){
+      if (!settled){ settled = true; resolve({ ok: false, code: "TIMEOUT" }); }
+    }, TAB_TIMEOUT_MS);
+    function done(r){ if (settled) return; settled = true; clearTimeout(timer); resolve(r); }
+    try {
+      chrome.tabs.sendMessage(tabId, { type: "cub:refresh", reason: "alarm" }, function (resp){
+        if (chrome.runtime.lastError) return done({ ok: false, code: "NO_RECEIVER" });
+        done(resp || { ok: false, code: "NO_RESPONSE" });
+      });
+    } catch (e){ done({ ok: false, code: "THREW" }); }
+  });
+}
+
+function noteOk(){
+  var now = Date.now();
+  return sset({ [HEALTH_KEY]: { lastOkAt: now, lastTryAt: now, fails: 0, lastError: null,
+                                nextAttemptAt: 0, direct403: 0, directBlockedUntil: 0 } });
+}
+
+function noteFail(h, e){
+  var fails = (h.fails || 0) + 1;
+  var backoff = Math.min(MAX_BACKOFF_MS, PERIOD_MIN * 60 * 1000 * Math.pow(2, fails - 1));
+  var status = (e && e.status) || 0;
+  // usage.js reports both 401 and 403 as code "AUTH", so branch on the status:
+  // 401 means logged out, but a 403 on a request from this origin smells like
+  // bot protection, and repeatedly poking it is exactly what we should not do.
+  var d403 = status === 403 ? (h.direct403 || 0) + 1 : 0;
+  return sset({ [HEALTH_KEY]: Object.assign({}, h, {
+    lastTryAt: Date.now(),
+    fails: fails,
+    lastError: { code: (e && e.code) || "ERR", status: status },
+    nextAttemptAt: Date.now() + backoff,
+    direct403: d403,
+    directBlockedUntil: d403 >= 3 ? Date.now() + DIRECT_BLOCK_MS : (h.directBlockedUntil || 0)
+  }) });
+}
+
+async function doRefresh(reason){
+  if (refreshing) return;
+  refreshing = true;
+  try {
+    var st = await sget([TOGGLE_KEY, LAST_KEY, HEALTH_KEY]);
+    if (st[TOGGLE_KEY] === false) return;      // master off: the badge is hidden anyway
+    var h = st[HEALTH_KEY] || {};
+    if (reason === "alarm" && h.nextAttemptAt && Date.now() < h.nextAttemptAt) return;
+
+    var last = st[LAST_KEY];
+    if (last && last.fetchedAt && Date.now() - last.fetchedAt < FRESH_MS){
+      // A visible tab or the popup just refreshed. Nothing to do, and the fact
+      // that it worked means the session is fine, so drop any backoff.
+      if (h.fails) await noteOk();
+      return;
+    }
+
+    var tabs = await claudeTabs();
+    for (var i = 0; i < tabs.length && i < 3; i++){
+      var r = await askTab(tabs[i].id);
+      if (r && r.ok){ await noteOk(); return; }   // the tab wrote cub_last for us
+    }
+
+    if (h.directBlockedUntil && Date.now() < h.directBlockedUntil) return;
+    try {
+      var data = await CUB.getUsage();
+      await sset({ [LAST_KEY]: data });           // fires onChanged -> refreshBadge()
+      await noteOk();
+    } catch (e){
+      await noteFail(h, e);                       // cub_last untouched: keep last-known numbers
+    }
+  } catch (e){
+    try { console.debug("[Claude Usage Bar] background refresh failed", e); } catch (e2) {}
+  } finally { refreshing = false; }
+}
+
+chrome.alarms.onAlarm.addListener(function (a){ if (a.name === ALARM) doRefresh("alarm"); });
+
+chrome.runtime.onInstalled.addListener(function (){ refreshBadge(); ensureAlarm(); doRefresh("install"); });
+chrome.runtime.onStartup.addListener(function (){ refreshBadge(); ensureAlarm(); doRefresh("startup"); });
 
 // And whenever the service worker first spins up with data already in storage.
+// ensureAlarm is safe here only because it is guarded; doRefresh is not, and
+// must never run at top level: this worker wakes on its own cub_last write.
 refreshBadge();
+ensureAlarm();

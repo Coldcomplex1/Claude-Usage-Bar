@@ -15,6 +15,7 @@
   var PLACE_MS = 800;
 
   var enabled = true, lastData = null, pollTimer = null, placeTimer = null;
+  var inFlight = null;   // in-progress fetch, so the poll and the background alarm share one
   var show = { session: true, allModels: true };
   var design = "1";
 
@@ -396,14 +397,25 @@
     if (enabled){ place(); render(); }
   }
 
-  async function refresh(){
-    if (!enabled) return;
-    try {
-      var data = await CUB.getUsage();
+  // The fetch-and-store half of refresh(), independent of `enabled` and of the
+  // DOM, so the background alarm can borrow this tab's same-origin session even
+  // when the bar itself is switched off. Concurrent callers share one request.
+  function fetchAndStore(){
+    if (inFlight) return inFlight;
+    inFlight = CUB.getUsage().then(function (data){
       lastData = data;
       chrome.storage.local.set({ [LAST_KEY]: data });
-      render();
-    } catch (e) { markError(); }
+      if (enabled) render();
+      return data;
+    });
+    // Clear the slot either way, without swallowing the rejection the caller sees.
+    inFlight.catch(function(){}).then(function(){ inFlight = null; });
+    return inFlight;
+  }
+
+  async function refresh(){
+    if (!enabled) return;
+    try { await fetchAndStore(); } catch (e) { markError(); }
   }
 
   function startPolling(){
@@ -422,6 +434,18 @@
     if (changes[LAST_KEY] && changes[LAST_KEY].newValue){ lastData = changes[LAST_KEY].newValue; if (enabled) render(); }
     if (changes[SHOW_KEY] && changes[SHOW_KEY].newValue){ show = Object.assign({ session:true, allModels:true }, changes[SHOW_KEY].newValue); if (enabled) render(); }
     if (changes[DESIGN_KEY]) { switchDesign(changes[DESIGN_KEY].newValue === "2" ? "2" : "1"); }
+  });
+
+  // The background alarm prefers to have an open claude.ai tab do the fetching,
+  // because from here the request is same-origin: the path we know works. We
+  // answer regardless of the master toggle, which only governs the visible bar.
+  chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse){
+    if (!msg || msg.type !== "cub:refresh") return;   // not ours: leave the channel alone
+    fetchAndStore().then(
+      function (d){ sendResponse({ ok: true, fetchedAt: d.fetchedAt }); },
+      function (e){ sendResponse({ ok: false, code: (e && e.code) || "ERR", status: (e && e.status) || 0 }); }
+    );
+    return true;                                      // sendResponse is async
   });
 
   document.addEventListener("visibilitychange", function(){
