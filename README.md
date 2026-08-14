@@ -27,6 +27,13 @@ This extension is not affiliated with, endorsed by, or sponsored by Anthropic. C
 is a trademark of Anthropic PBC. It relies on undocumented Claude features that can
 change over time.
 
+## Repo layout
+
+- `claude-extension/` is the extension itself. This is the folder you load unpacked
+  and the folder you zip for the store.
+- `index.html` is the landing page, a single self-contained file with a live demo of
+  the bar. `vercel.json` is the deploy config for it.
+
 ## How it works
 
 It reads your usage from Claude's own internal endpoints using the login session
@@ -44,11 +51,16 @@ itself. An open, visible tab also refreshes its own bar every minute.
 Everything stays on your machine (`chrome.storage.local`). Nothing is sent to any
 third-party server.
 
-## Install (unpacked)
+## Install
+
+From the Chrome Web Store:
+[Claude Usage Bar](https://chromewebstore.google.com/detail/claude-usage-bar-track-yo/jlomdmgiaoldnhjfhehgjjkgnlighmeo).
+
+Or run it from source:
 
 1. Go to `chrome://extensions`.
 2. Turn on Developer mode (top right).
-3. Click Load unpacked and select the folder containing `manifest.json`.
+3. Click Load unpacked and select the `claude-extension` folder.
 4. Open or refresh claude.ai.
 
 Works on any Chromium browser (Chrome, Edge, Brave, Arc, Opera).
@@ -79,21 +91,25 @@ Works on any Chromium browser (Chrome, Edge, Brave, Arc, Opera).
 - `alarms`: refreshes the numbers every five minutes so they are not stale.
 - `commands`: the show or hide keyboard shortcut.
 
-## Publishing to the Chrome Web Store
+## Shipping an update
 
-The code is Manifest V3 and ships no remote code, so it meets the core store
-requirements. Before submitting:
+The listing is live, so an update is: bump `version` in
+`claude-extension/manifest.json`, zip the `claude-extension` folder, upload it in
+the developer dashboard. The code is Manifest V3 and ships no remote code, so
+there is nothing else to satisfy on the store side.
 
-1. Add a privacy policy URL. It can be short: the extension reads your Claude
-   usage via claude.ai, stores it only in local browser storage, and sends nothing
-   to any external server.
-2. Provide listing assets: the 128px icon (included), at least one screenshot
-   (1280×800 or 640×400), and a short and detailed description.
-3. Fill the permission justifications (see Permissions above) in the dashboard.
-4. Disclose that it relies on undocumented claude.ai endpoints that can change.
-5. Naming/trademark: the store may flag a name that implies official affiliation.
-   Consider a name like "Usage Bar for Claude"; the included "not affiliated"
-   note helps. Edit the copyright holder in `LICENSE`.
+The privacy policy the listing points at is `claude-extension/privacy-policy.html`,
+which the landing page also serves at `/privacy`.
+
+## Landing page
+
+`index.html` at the repo root is the whole site: one self-contained file, no build
+step, with a working demo of the bar running on made-up numbers. Open it straight
+from disk to work on it.
+
+Vercel needs no configuration for it. Import the repo, framework preset "Other", no
+build command, root directory `.`. `vercel.json` only adds the `/privacy` rewrite
+and two security headers.
 
 ## Caveats
 

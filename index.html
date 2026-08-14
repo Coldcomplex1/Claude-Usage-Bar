@@ -1,0 +1,1321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Claude Usage Bar</title>
+<meta name="description" content="A small Chrome extension that shows your Claude.ai usage, your 5 hour session and your weekly limits, in a slim bar under the chat box. No sign-in, no tokens, nothing leaves your browser." />
+<meta property="og:title" content="Claude Usage Bar" />
+<meta property="og:description" content="See how much Claude you have left, right under the chat box." />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="/claude-extension/icons/icon128.png" />
+<meta name="theme-color" content="#d85a30" />
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAQTElEQVR4nO2dbWxc1ZnH/89zzr13xm9JyIuJgS5LUBzcLA1QUJdFdYMESZH6ApJTsyjqFimItou0bUUIH1bjUaWFDVv6oVVbES0VRd1EGWmjdiWagFQ3asVWlJcsCgZHkG61YHAITfw2M/flnGc/XE8ak9ixY2cSzz0/aeSRPXfO9f3/7znPOfc55xAWABHQb/q61cbiweTU7wrd+j3bcXOU4HrFdGOU2BsMbJsi7rQiC1Fsw8FEMGIHFXjU1/yasfKqr/H6FTz0Bzrt2vYXuvXn+g4aIsz7QtJ8Dv648Ece2hwErcvuNFa+JIRbrGB9TisiIhhrYUUQGTvfc25ofMVgIihmiAiqiREmHCbBS4rpF+HYiefX/mB/CCyMEc7bAP2Fbl0T/p1He9sZ9HUQegOtOpkIYWJQTQxExIJIIEIAiIjmZbpGR0QEgNSuGRFxTisEWsGKIEzMIAR7LOTHax7bMwxM1WKuzFkMEVB6fiRvf+fuVcrPfQOEB5t83V6JDSpxYhlkBcJExOdzUo6piIglkLUQznua855COUqGIfiJiao/uvZ7+46JCAGEudYGcxJI9vYoIggRyZFHeu8nP/dac+AVjEj7iXKYVOPEMhGDoJ34CwdNXlMm4mqc2BPlMDEi7c2BVyA/99qRR3rvJyIhgsjeHjWn757tB2Vvj6ItJfPKw1/sWKqbnm4JvE3jYYLYmAQgRTS/eMIxN0QggBhPKd0SaIyH8YGTSfn+m5745VBNq9l8z6xEk0K3puLB5M3tWzYFin+a8/Tq0WqcAKJcm35xSWMGMm05T1fj5P3Q2K9dt3PvgZpm5zr+nNW0FApMxYPJ4Pbeba2Bvx9Eq0eqsaG0mnfiX2QoDav1SDU2IFrdGvj7B7f3bqPiwUQKhXPqO+0HBKD+QrdGX1GO7Ogt5D1+qhLFNkqMZcKc2hnHhYcJKkqMrUSxzXv81JEdvQX0FaW/0K1lhpp+2j+cqvYf7unrWNJS+GCsnIjAtfWXOCIQIpjLW5v00Mh48bonSn0zNQdnFbMWRAxs79nW4vlPVU0SWwvtxF8ciECYkeSU9sbj6IGunaVd0wWGZwgqPT2KSiUzsL3njiVB8PxEFFsrICf+4kIEwgRp9j0eCcM7u3aWXqhpe/rnpogqBTAVYd95tLddhP6HGauixIjr0y9ORMT6WpG1OEYkn1rz2J7hmsa1z0wVdqCHpFDgxMqzzb5qDxNrnfiLFyLiMLG22VftiZVnpVBgDPRMuelPiSt70+rhSGVg67J8cMdINUpctL/4YYIaqUbJsnxwx5HKwFYqlczpo4UMpOP7fW90ybs7ti5nVo+Ph7EluDu/USAQj4exZVaPv7tj6/K+N7okfaZTqwFKPVwsFu2YiR5akvMvj4y1oLk9J3BcwhA4MtYuyfmXj5nooWKxaFHqYQAgERAIGPz2vcuVZ99ipstiI3BRf2MhAvEUwVr5s4l5XeeTuz+CAIy+giJA4JtvtuWD5ZER68RfQJgBVtO/6tTSEoEiI7YtHyyHb75JgKCvoEgA+r9v9eSqAR/2lfrramyEXPU/f5gBayBhFbAzZEEpDQpy6fsLnConApvzFEXG/DEX2vVXfb9U1QTI2wFtbPG9a0aqUfo83zE/iCHVMijIo+VTfxcFHVcnkLOYQATld97wKkcHPBCBPP+CmoAIXIkTuyTnX1NGtJGA5zQAWNDdzCQEsphjkojjYxBB4iqa1m6IV92zbTxYdUUCzJilQxODh/zhfbta4uMfKPICnNUsC3V6IMtMZEF3A3iO+r/61VxHe/WVvK+6ypGxrvqfB8SQsIymtRviqx7sOwkAMIZS/Qln9wEBSokpj/Ef/+2fltmxUYbWF6wmEIFt8hVXIjMwNJy7iVe2l6/XTJ0V1/bPEwLEgII8Vt2zbRwAYBKCUoDS+MvPj78UkESkmlrNys/fNyFxCFzANIu0GTCimTpXtpevZ495g6+VEpesPz+IIGEVzZ03RMGqKxIYQ1B6dseyBgBesuG2UK/qsIijC2oCsSK+Vspj3sAQfIaIACJngPlABFiLoOPqyTZ/DpeTOe0peL74K1YbMQnmOWVjZoiEiADBZxjAemMtAHF9/4VgvgGcrcd9KJRqjvUMSNtk7e8MkB0o1VzamIk7I2PhEjyzAxFRZCyYuJNd7JddrIjr9mUdZ4CM4wyQcZwBMo4zQMZxBsg4zgAZxxkg4zgDZBxngIzjDJBxZpmx0CCkeQ+Y/sGnpKlYGXo+kh0DMANJDInC6QUmANoH+UFmjJAZA0h5HGrZCtty88ZIL11hYQ2m1AREsGGFJt581Y/e/1OanatUw5sgGwYwCZZ99guV5XfdV1a5ppmXT/vCP/CJ3z2XO/6r/2iWJCJwY5ugsQ3ADCmPY/nme8srNt87DoBhkmkC38m0bcVYdttdZX9lh3l313eXEDf2DPnG7QUQA1EV/hXXmBWb7y0DYFgzTWr2aWnbYCCJublzQ9j26Y2hVCbSOXwNSgMbgCBJgiW33F4FYGGS2QvJ6czppbduqsAPkMYLjUnjGkAsoBSCjmvSHOs5pTwSAJC/ssNwc5vAmguap38xaVwD1JhPmnYGuoKNbwDHjDgDZBxngIzjDJBxnAEyjjNAxnEGyDjOABnHGSDjOANkHGeAjHMJ5APQmSl6p1ZVa+xx+EuBi2eAWoKmSSbXxTl9Hb3J97V1dq1gTosuOWbNxTEAc5qcmcTg1qUCNbkwYu2RqwiIWWy1wjIxBso1pUa4gCtoZpX6G4AZUpmA136VWX77l8tN626M2QvkjOqeGWbsJI+++tvgxG//K2+rZSIv50ywwNTXAJPit9742bDjvm+NgXnGtYlVrilZsekr8ZJbbq++++//siR6/0+KfGeChaR+vQAiIArhtV9lJsUXJDGnS6nbdKHE01/p7whJxN6ylWZ17z+Okfac+AtMXQ0gSYzLNn65AmYLExO0N5l/x5MB32mv2u+0DyQx5a5cE7VuuDWUarmhkzTrTd22q4BJwK1LpbnzhggAg+Yg4mSSZsvf3BqC2XUPF5D61QAigPbAQe681eMgJ2lPwRlgoajvSOB8kyzdnb/guKHgjOMMkHGcATKOM0DGcQbIOM4AGccZIOM4A2QcZ4CM4wyQcZwBMo4zQMZxBsg4zgAZxxkg4zgDZBxngIzjDJBxnAEyjjNAxnEGyDj1NcCpLVvO9/jzON3zOebUsedxvvMpDwC4vmsS18cAIgAr2IlRij4cUkg355nb8YCEQ0c1jJndRSYGjEE4dFQDOHPy6cwFAoBEHw4pOzE6u00jJJ3OHg79r8ZZFz2YAWvTyS9xRNHx9xUpjXrNfahfDcAKiEKcfPFAHoCk8/9mQW2Nf4BHXvp1jrSe3fwAEZDWGHnp1zkADKVnv+x7em5y8sUDeUTh7KaiiYCCHCYGX/PDY+9pKCUwySzLSwDAjhz6XZAcG2J4ft3mQNTPANaA8s0Yfbk/mBg8FEB7FrDpAhHGTP48yyu9+Pb4/t1N0XtHFWY7O1gs4OcQvXdUHd+/uwmABavpy6mdAyygPTsxeCgYfbk/oHzzLI0jAClIWMGx/9zVAgBQWv7yv033PxpA+2LKY+rDX/28mbygrhNgaPCRr9SxNEqNoH1Z8fm/n1h2213pZg4zYKpl9dFzP286+d8H8pM1wdwxCZb+7abZ7RkEzG/PICJIHKLp2uvjVfdsGw9WXZFg5vqcJgYP+cP7drXExz9IN6uq4wzo+hoAmJwoaiBxCH/1X5nm626MOMh/rI1OY4bk5HEeH3jZNyeOM+Wa5lWsVMvprmFdn77wu4YRQ8IyKMijufOGKOi4OjmrqCIov/OGVzk64IEIVMeq/9Sp1t0AwKnoOl0mJpr+/iBK9/DTHmYdM0xHvfcNZAasgYTVmc9daVCQS99fhLmPmolg613w5MUlzwf8AOfcyXO+4gPpdygNavLqVx4IlG+eoTxMXouLs+gFE0FbsYO+Up1hYoSozhvj1HtLlouxBcxCmGmBEREJtKLImEEGaJRT3d3c6+wgqeY0ygAOK2YA5AyQGUhSzXGYQfi9pFVjY+6L5jgTERIRgPB7jq09FCXGEDfoxniOMyAmihJjYmsP8YfDTa8nVgbzniKRmQdlHIsfEdi8pyixMvjhcNPrvPGZZ6rEeNHXSnCOUTlHQ2B9rYQYL2585pkqAwBD9lkrJBCXH9DgCIStFWLIPgBgAcgPpX88io/mPe2agQYmrf41jUfxUT+UfgGIUSioT3y/VLGQn+U9TXN7UO9YTAggeU+ThfzsE98vVVAoKBIBgYDBb9+7XHn2LWa6LDYCorlkNDgudUQgniJYK382Ma/rfHL3R5B0OFiwt4fXPbn7eGLxw9bAJwCzzJxwLCJMa+BTYvHDdU/uPo69PUyEdPBHBNTXV6Bt4dFlFcSHFdGq2FiAXNJoQyCwnmIYkWN5eOt3Bdec6OsrCtFk1E8E6fvkAF35+LMfWWt2tAQei1uXvWEQiG0JPLbW7Ljy8Wc/6vvkABGlsd6Udl56ehS6uuRI9a39bYF3x8lqbJjg1mZfxFiBWZrz1GgYv7A2t24zBgaISqVTTfzUKr6rJFQsWs20dSIyw4FmFnE1wWJFRGygmSciM6yZtlKxaNFVmtLLm2IAKsJKT49a89ie4cgmWwOliIkg4rqGiw2R9JFvoBRFNtm65rE9w9LTo6g4dZznjCCPSiUje3tU187SCyNh+EBOa2ZG4kyweBCBMCPJac0jYfhA187SC7K3R51e9dc4a5RPW0pGCt26a2dp10QUFdtbmjwiGGeCSx8RCBFMe0uTNxFFxa6dpV1S6Na05UzxgZnmBRQPmv5Ct163s1QcHq/05bXSiiAuJrh0ERGrCJLXSg+PV/rW7SwV+wvdGsWD047rnHO0TwoFpmLRDm7v3dYc6KciYxAm1vUOLjGswASala8UJsLkgc6de3bVtJvpuFkN90qhW1PxYPLm9i2bAsU/zXl69Wg1TgBRdU8kdUxB0tQe05bzdDVO3g+N/dp1O/ceqGl2ruNnLZ7s7VG0pWReefiLHUt109MtgbdpPEwQG5MApNyzg/qSxmNiPKV0S6AxHsYHTibl+2964pdDNa1m8z1zEu30Lz7ySO/9ium7rYHXMRpGSIxNADDRfOdHO2ZiMgazWrFuC3yMhfGQsfLPa/91z9PAVI1mw5zvWhEQICAiefs7d69Sfu4bIDzY5Ov2SmxQiRPLIJt2Q50ZFgIRsQSyFsJ5T3PeUyhHyTAEPzFR9UfXfm/fMREhgFAb4p0t511t9xe69cbJNuadR3vbGfR1EHoDrTqZCGFiUE1M6lgimcw6JhczzEzapkNq14yIOKcVAq1gRRAmZhCCPRby4zWP7RkGpmoxV+YlhgjoN33dqlb4kYc2B0HrsjuNlS8J4RYrWJ/TaZxorIUVQWRcL3ImfMVgIihmiAiqiREmHCbBS4rpF+HYiefX/mB/CKTCf67voJnrXX86C3I3ftwIQNpzeM923BwluF4x3Rgl9gYD26aIO+s+F3GRwEQwYgcVeNTX/Jqx8qqv8foVPPSH0yP6hRC+xv8DMAPxBgGmpBYAAAAASUVORK5CYII=" />
+<style>
+/* ==========================================================================
+   Page shell
+   ========================================================================== */
+:root{
+  --bg:#faf9f7; --bg-2:#f3f1ec; --card:#ffffff; --card-2:#fbfaf8;
+  --text:#2c2c2a; --muted:#6d6c65;
+  --line:rgba(0,0,0,0.11); --line-soft:rgba(0,0,0,0.06);
+  --accent:#d85a30; --accent-ink:#b8451f; --accent-soft:rgba(216,90,48,0.10);
+  --blue:#378add; --red:#e2564d;
+  --switch-off:#cfcdc6;
+  --shadow:0 1px 2px rgba(0,0,0,.04), 0 10px 30px rgba(0,0,0,.06);
+  --shadow-lg:0 2px 6px rgba(0,0,0,.05), 0 24px 60px rgba(0,0,0,.10);
+  --radius:14px;
+  /* The extension is a piece of system UI, so the page speaks system UI too:
+     one sans for everything, and a mono that does real work on the numbers. */
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1c1b1a; --bg-2:#232220; --card:#2a2926; --card-2:#302f2b;
+    --text:#ecebe5; --muted:#a5a29a;
+    --line:rgba(255,255,255,0.13); --line-soft:rgba(255,255,255,0.07);
+    --accent:#e4744d; --accent-ink:#f0906c; --accent-soft:rgba(226,112,74,0.15);
+    --switch-off:#55554f;
+    --shadow:0 1px 2px rgba(0,0,0,.35), 0 10px 30px rgba(0,0,0,.35);
+    --shadow-lg:0 2px 8px rgba(0,0,0,.4), 0 30px 70px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1c1b1a; --bg-2:#232220; --card:#2a2926; --card-2:#302f2b;
+  --text:#ecebe5; --muted:#a5a29a;
+  --line:rgba(255,255,255,0.13); --line-soft:rgba(255,255,255,0.07);
+  --accent:#e4744d; --accent-ink:#f0906c; --accent-soft:rgba(226,112,74,0.15);
+  --switch-off:#55554f;
+  --shadow:0 1px 2px rgba(0,0,0,.35), 0 10px 30px rgba(0,0,0,.35);
+  --shadow-lg:0 2px 8px rgba(0,0,0,.4), 0 30px 70px rgba(0,0,0,.5);
+}
+
+*{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  margin:0; background:var(--bg); color:var(--text); overflow-x:clip;
+  font-family:var(--sans);
+  font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{ font-weight:700; letter-spacing:-0.025em; line-height:1.1; margin:0; text-wrap:balance; }
+p{ margin:0; }
+a{ color:inherit; }
+img{ max-width:100%; }
+.wrap{ width:100%; max-width:1140px; margin:0 auto; padding:0 22px; }
+section{ scroll-margin-top:76px; }
+:where(a,button,input,summary,[tabindex]):focus-visible{ outline:2px solid var(--accent); outline-offset:3px; border-radius:5px; }
+.eyebrow{ font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); }
+.lede{ color:var(--muted); font-size:17px; }
+.sec-head{ max-width:640px; margin-bottom:34px; }
+.sec-head h2{ font-size:clamp(26px,3.4vw,36px); margin:10px 0 12px; }
+
+/* Buttons */
+.btn{
+  display:inline-flex; align-items:center; gap:9px; border-radius:11px; cursor:pointer;
+  font:inherit; font-size:15px; font-weight:600; padding:12px 20px; text-decoration:none;
+  white-space:nowrap;
+  border:1px solid transparent; transition:transform .12s ease, background .18s ease, border-color .18s ease;
+}
+.btn:active{ transform:translateY(1px); }
+.btn-primary{ background:var(--accent); color:#fff; box-shadow:0 6px 18px rgba(216,90,48,.28); }
+.btn-primary:hover{ background:var(--accent-ink); }
+.btn-ghost{ background:transparent; color:var(--text); border-color:var(--line); }
+.btn-ghost:hover{ background:var(--card); }
+.btn-sm{ font-size:13px; padding:8px 14px; border-radius:9px; }
+
+/* Nav */
+.nav{
+  position:sticky; top:0; z-index:40; background:color-mix(in srgb, var(--bg) 88%, transparent);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border-bottom:1px solid var(--line-soft);
+}
+.nav-in{ display:flex; align-items:center; gap:16px; height:60px; }
+.brand{ display:flex; align-items:center; gap:10px; font-weight:700; text-decoration:none; font-size:15px; white-space:nowrap; }
+.brand img{ width:26px; height:26px; border-radius:7px; }
+.nav-links{ display:flex; gap:22px; margin-left:auto; font-size:14px; color:var(--muted); }
+.nav-links a{ text-decoration:none; }
+.nav-links a:hover{ color:var(--text); }
+.nav .btn{ margin-left:auto; }
+.nav-links + .btn{ margin-left:0; }
+@media (max-width:820px){ .nav-links{ display:none; } }
+@media (max-width:520px){
+  .wrap{ padding:0 16px; }
+  .brand{ font-size:14px; gap:8px; }
+  .brand img{ width:24px; height:24px; }
+  .nav .btn{ font-size:13px; padding:9px 13px; }
+}
+
+/* Hero */
+.hero{ position:relative; padding:70px 0 40px; overflow:hidden; }
+.hero::before{
+  content:""; position:absolute; inset:-200px 0 auto 0; height:520px; pointer-events:none;
+  background:radial-gradient(58% 60% at 50% 42%, var(--accent-soft), transparent 70%);
+}
+.hero-in{ position:relative; max-width:760px; }
+.hero h1{ font-size:clamp(36px,6vw,60px); margin:14px 0 18px; }
+.hero .lede{ font-size:clamp(17px,2.1vw,20px); max-width:600px; }
+.hero-cta{ display:flex; flex-wrap:wrap; gap:12px; margin-top:28px; }
+.hero-note{ margin-top:18px; font-size:13.5px; color:var(--muted); }
+.hero-note b{ color:var(--text); font-weight:600; }
+
+/* A real instance of the bar, in the page's own colors rather than claude.ai's,
+   so the first thing on screen is the thing being sold. */
+.hero-readout{ margin-top:34px; max-width:480px; }
+.hero-cap{ font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:9px; }
+.hero-readout .cub-bar{
+  margin:0; color:var(--text); background:var(--card); border-color:var(--line);
+  -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:var(--shadow);
+}
+.hero-readout .cub-track{ background:var(--line); }
+
+/* Generic card */
+.card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+
+/* ==========================================================================
+   Demo
+   ========================================================================== */
+.demo{ padding:30px 0 20px; }
+.demo-grid{ display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:26px; align-items:start; }
+/* minmax(0,1fr), not 1fr: the bar's own min-content would otherwise push the
+   column wider than the screen on a narrow phone. */
+@media (max-width:960px){ .demo-grid{ grid-template-columns:minmax(0,1fr); } }
+
+.demo-stage{ position:sticky; top:76px; }
+@media (max-width:960px){ .demo-stage{ position:static; } }
+.demo-cap{ margin-top:10px; font-size:12.5px; color:var(--muted); text-align:center; }
+
+/* Mock browser window */
+/* The mock carries claude.ai's own colors, not the page tokens, so a light
+   Claude window stays readable while this page is in dark mode. */
+.mock{
+  position:relative; border:1px solid var(--line); border-radius:14px; overflow:hidden;
+  box-shadow:var(--shadow-lg); background:#faf9f7; color:#3d3d3a;
+}
+.mock-chrome{
+  display:flex; align-items:center; gap:10px; padding:9px 12px;
+  background:#e9e6e0; border-bottom:1px solid rgba(0,0,0,.08);
+}
+.dots{ display:flex; gap:6px; flex:none; }
+.dots i{ width:10px; height:10px; border-radius:50%; background:rgba(0,0,0,.16); }
+.mock-tab{
+  display:flex; align-items:center; gap:7px; font-size:12px; color:#4a4843;
+  background:#faf9f7; border-radius:7px 7px 0 0; padding:6px 12px; margin-bottom:-9px; flex:none;
+}
+.mock-tab img{ width:14px; height:14px; border-radius:3px; }
+.mock-url{
+  flex:1; min-width:0; font-size:11.5px; color:#6d6b64; background:#faf9f7;
+  border-radius:999px; padding:5px 12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.mock-ext{ display:flex; align-items:center; gap:6px; flex:none; }
+.ext-icon{
+  position:relative; display:block; width:26px; height:26px; padding:0; cursor:pointer;
+  background:none; border:none; border-radius:7px; line-height:0;
+}
+.ext-icon:hover{ background:rgba(0,0,0,.07); }
+.ext-icon img{ width:22px; height:22px; border-radius:6px; }
+.ext-badge{
+  position:absolute; right:-3px; bottom:-2px; min-width:16px; height:12px; padding:0 2px;
+  border-radius:3px; background:#378add; color:#fff; font-size:9px; font-weight:700;
+  line-height:12px; text-align:center; font-variant-numeric:tabular-nums;
+}
+.ext-badge[hidden]{ display:none; }
+
+.mock-body{ padding:18px 18px 16px; min-height:330px; display:flex; flex-direction:column; }
+.chat{ flex:1; display:flex; flex-direction:column; gap:14px; margin-bottom:16px; font-size:13px; }
+.msg{ max-width:82%; }
+.msg-user{ align-self:flex-end; background:rgba(0,0,0,.05); border-radius:14px; padding:9px 13px; }
+.msg-ai{ align-self:flex-start; color:inherit; }
+.msg-ai .who{ display:block; font-size:11px; font-weight:600; opacity:.5; margin-bottom:3px; }
+
+/* Mock composer */
+.cmp{ border:1px solid rgba(0,0,0,.14); background:#fff; border-radius:14px; padding:11px 12px 9px; }
+.cmp-input{ font-size:13.5px; color:rgba(0,0,0,.38); padding:3px 2px 12px; }
+.cmp-tools{ display:flex; align-items:center; gap:8px; }
+.cmp-plus{
+  flex:none; width:26px; height:26px; border-radius:50%; border:1px solid rgba(0,0,0,.22);
+  background:none; color:inherit; font-size:15px; line-height:1; cursor:default; opacity:.65;
+}
+.cmp-spacer{ flex:1; min-width:6px; }
+.cmp-model{ flex:none; font-size:11.5px; color:rgba(0,0,0,.5); border:1px solid rgba(0,0,0,.12); border-radius:7px; padding:4px 9px; white-space:nowrap; }
+.cmp-send{ flex:none; width:26px; height:26px; border-radius:50%; border:none; background:#d85a30; color:#fff; font-size:13px; line-height:1; cursor:default; }
+
+/* Mock in dark, matching claude.ai's dark surfaces */
+.mock[data-claude-theme="dark"]{ background:#262624; }
+.mock[data-claude-theme="dark"] .mock-chrome{ background:#1a1a18; border-bottom-color:rgba(255,255,255,.09); }
+.mock[data-claude-theme="dark"] .dots i{ background:rgba(255,255,255,.2); }
+.mock[data-claude-theme="dark"] .mock-tab{ background:#262624; color:#cfcdc6; }
+.mock[data-claude-theme="dark"] .mock-url{ background:#262624; color:#9d9b94; }
+.mock[data-claude-theme="dark"] .ext-icon:hover{ background:rgba(255,255,255,.1); }
+.mock[data-claude-theme="dark"]{ color:#e7e7e3; }
+.mock[data-claude-theme="dark"] .msg-user{ background:rgba(255,255,255,.08); }
+.mock[data-claude-theme="dark"] .cmp{ background:#302f2c; border-color:rgba(255,255,255,.13); }
+.mock[data-claude-theme="dark"] .cmp-input{ color:rgba(255,255,255,.42); }
+.mock[data-claude-theme="dark"] .cmp-plus{ border-color:rgba(255,255,255,.3); }
+.mock[data-claude-theme="dark"] .cmp-model{ color:rgba(255,255,255,.55); border-color:rgba(255,255,255,.15); }
+
+/* --------------------------------------------------------------------------
+   The extension itself. These rules are lifted from the extension's
+   content.css and popup.css. The only change: the extension switches to dark
+   with @media (prefers-color-scheme: dark), and here the same rules hang off
+   the mock's data-claude-theme so the appearance switch works on its own.
+   -------------------------------------------------------------------------- */
+.cub-bar{
+  box-sizing:border-box; width:100%; margin:14px auto 0; padding:9px 14px;
+  display:flex; flex-direction:column; gap:8px;
+  font-family:ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;
+  font-size:12px; line-height:1.2; color:#3d3d3a;
+  background:rgba(255,255,255,.72); border:1px solid rgba(0,0,0,.08);
+  border-radius:12px; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+  position:relative; z-index:5;
+}
+.cub-bar .cub-seg{ display:grid; grid-template-columns:100px minmax(30px,1fr) 42px 58px; column-gap:12px; align-items:center; }
+.cub-bar .cub-seg[hidden]{ display:none; }
+.cub-bar .cub-label{ min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cub-bar .cub-name{ font-weight:600; }
+.cub-bar .cub-sub{ font-size:10px; opacity:.5; }
+.cub-bar .cub-track{ display:block; height:5px; border-radius:999px; background:rgba(0,0,0,.09); overflow:hidden; }
+.cub-bar .cub-fill{ display:block; height:100%; width:0; border-radius:999px; background:#b9b8b1; transition:width .4s ease, background .3s ease; }
+.cub-bar .cub-fill.cub-low{ background:#378add; }
+.cub-bar .cub-fill.cub-mid{ background:#d85a30; }
+.cub-bar .cub-fill.cub-high{ background:#e2564d; }
+.cub-bar .cub-val{ text-align:right; font-weight:600; font-variant-numeric:tabular-nums; }
+.cub-bar .cub-reset{ text-align:left; font-size:10px; opacity:.55; white-space:nowrap; overflow:hidden; }
+
+.mock[data-claude-theme="dark"] .cub-bar{ color:#e7e7e3; background:rgba(45,45,43,.7); border-color:rgba(255,255,255,.12); }
+.mock[data-claude-theme="dark"] .cub-bar .cub-track{ background:rgba(255,255,255,.13); }
+
+.cub-inline{
+  display:inline-flex; align-items:center; gap:14px; flex:0 0 auto;
+  align-self:center; margin:0 10px; vertical-align:middle;
+  font-family:ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;
+  font-size:12px; line-height:1; color:#3d3d3a;
+}
+.cub-inline .cub-i-seg{ display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+.cub-inline .cub-i-seg[hidden]{ display:none; }
+.cub-inline .cub-i-val{ font-weight:600; font-variant-numeric:tabular-nums; }
+.cub-inline .cub-i-bar{ display:inline-block; width:80px; height:5px; border-radius:999px; background:rgba(0,0,0,.12); overflow:hidden; }
+.cub-inline .cub-i-fill{ display:block; height:100%; width:0; border-radius:999px; background:#b9b8b1; transition:width .4s ease, background .3s ease; }
+.cub-inline .cub-i-fill.cub-low{ background:#378add; }
+.cub-inline .cub-i-fill.cub-mid{ background:#d85a30; }
+.cub-inline .cub-i-fill.cub-high{ background:#e2564d; }
+.cub-inline .cub-i-ring{ display:inline-flex; }
+.cub-inline .cub-i-ring svg{ display:block; transform:rotate(-90deg); }
+.cub-inline .cub-i-ring-bg{ fill:none; stroke:rgba(0,0,0,.12); stroke-width:2.5; }
+.cub-inline .cub-i-ring-fill{
+  fill:none; stroke:#b9b8b1; stroke-width:2.5; stroke-linecap:round;
+  stroke-dasharray:50.265; stroke-dashoffset:50.265;
+  transition:stroke-dashoffset .4s ease, stroke .3s ease;
+}
+.cub-inline .cub-i-ring-fill.cub-low{ stroke:#378add; }
+.cub-inline .cub-i-ring-fill.cub-mid{ stroke:#d85a30; }
+.cub-inline .cub-i-ring-fill.cub-high{ stroke:#e2564d; }
+
+.mock[data-claude-theme="dark"] .cub-inline{ color:#e7e7e3; }
+.mock[data-claude-theme="dark"] .cub-inline .cub-i-bar{ background:rgba(255,255,255,.16); }
+.mock[data-claude-theme="dark"] .cub-inline .cub-i-ring-bg{ stroke:rgba(255,255,255,.16); }
+
+/* The mock is far narrower than a real browser window, so on small screens the
+   demo tightens the widget rather than letting the row overflow. The extension
+   itself keeps its own measurements, it has a whole window to work with. */
+@media (max-width:540px){
+  .cub-inline{ gap:10px; margin:0 6px; }
+  .cub-inline .cub-i-bar{ width:38px; }
+  .cmp-model{ display:none; }
+}
+@media (max-width:420px){
+  .mock-body{ padding:12px; }
+  .cmp{ padding:9px 9px 8px; }
+  .cub-bar{ padding:9px 10px; }
+  .cub-bar .cub-seg{ grid-template-columns:74px minmax(20px,1fr) 34px 44px; column-gap:8px; }
+  .cub-inline{ gap:8px; margin:0 4px; font-size:11px; }
+  .cub-inline .cub-i-seg{ gap:5px; }
+  .cub-inline .cub-i-bar{ width:20px; }
+  .cmp-tools{ gap:6px; }
+  .cmp-plus, .cmp-send{ width:22px; height:22px; font-size:13px; }
+}
+
+/* Popup replica, from popup.css */
+.popup-wrap{ position:absolute; top:44px; right:12px; z-index:30; }
+.popup-wrap[hidden]{ display:none; }
+.popup{
+  width:276px; border-radius:12px; border:1px solid rgba(0,0,0,.12); overflow:hidden;
+  box-shadow:0 12px 40px rgba(0,0,0,.22); background:#faf9f7; color:#3d3d3a;
+  font-family:ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif; font-size:13px;
+  animation:pop .14s ease-out;
+}
+@keyframes pop{ from{ opacity:0; transform:translateY(-6px) scale(.98); } }
+.p-wrap{ padding:12px 14px 14px; }
+.p-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.p-title{ font-size:14px; font-weight:700; }
+.p-rows{ display:flex; flex-direction:column; gap:12px; min-height:40px; }
+.p-row-head{ display:flex; align-items:baseline; gap:6px; margin-bottom:5px; }
+.p-label{ font-weight:600; }
+.p-sub{ font-size:10px; opacity:.5; }
+.p-val{ margin-left:auto; font-weight:600; font-variant-numeric:tabular-nums; }
+.p-track{ height:6px; border-radius:999px; background:rgba(0,0,0,.09); overflow:hidden; }
+.p-fill{ height:100%; width:0; border-radius:999px; background:#b9b8b1; transition:width .4s ease, background .3s ease; }
+.p-fill.low{ background:#378add; }
+.p-fill.mid{ background:#d85a30; }
+.p-fill.high{ background:#e2564d; }
+.p-reset{ margin-top:3px; font-size:10px; opacity:.55; }
+.p-show{ margin-top:14px; }
+.p-show-label{ font-size:11px; opacity:.6; }
+.p-chks{ display:flex; flex-wrap:wrap; gap:10px 14px; margin-top:7px; }
+.p-chk{ display:inline-flex; align-items:center; gap:6px; font-size:12px; cursor:pointer; }
+.p-chk input{ accent-color:#d85a30; width:14px; height:14px; cursor:pointer; }
+.p-foot{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:14px; padding-top:10px; border-top:1px solid rgba(0,0,0,.08); }
+.p-status{ font-size:11px; opacity:.65; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.p-actions{ display:flex; gap:8px; flex:none; }
+.popup .p-btn{ border:1px solid rgba(0,0,0,.12); background:#fff; color:inherit; font:inherit; font-size:12px; padding:4px 10px; border-radius:7px; cursor:pointer; }
+.popup .p-btn:hover{ background:#f0efeb; }
+
+.mock[data-claude-theme="dark"] .popup{ color:#e7e7e3; background:#262624; border-color:rgba(255,255,255,.14); }
+.mock[data-claude-theme="dark"] .p-track{ background:rgba(255,255,255,.13); }
+.mock[data-claude-theme="dark"] .p-foot{ border-top-color:rgba(255,255,255,.12); }
+.mock[data-claude-theme="dark"] .popup .p-btn{ background:#333330; border-color:rgba(255,255,255,.14); }
+.mock[data-claude-theme="dark"] .popup .p-btn:hover{ background:#3d3d3a; }
+
+/* --------------------------------------------------------------------------
+   Control panel. Same structure and class names as the extension's Settings
+   page, redrawn against the page's own color tokens so it follows this site's
+   theme instead of the visitor's system theme.
+   -------------------------------------------------------------------------- */
+.panel{ display:flex; flex-direction:column; gap:12px; }
+.panel-tag{ display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); }
+.panel-tag b{ color:var(--text); font-weight:600; }
+.o-card{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+.o-card + .o-card{ margin-top:0; }
+.o-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.o-row + .o-row{ margin-top:14px; padding-top:14px; border-top:1px solid var(--line-soft); }
+.o-row-text{ min-width:0; }
+.o-row-label{ font-weight:600; font-size:13.5px; }
+.o-row-sub{ font-size:12px; color:var(--muted); margin-top:2px; }
+.o-actions{ display:flex; align-items:center; gap:10px; flex:none; }
+
+.p-switch{ position:relative; display:inline-block; width:38px; height:22px; flex:none; }
+.p-switch input{ opacity:0; width:0; height:0; position:absolute; }
+.p-slider{ position:absolute; inset:0; cursor:pointer; background:var(--switch-off); border-radius:999px; transition:background .2s; }
+.p-slider::before{ content:""; position:absolute; height:16px; width:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform .2s; }
+.p-switch input:checked + .p-slider{ background:var(--accent); }
+.p-switch input:checked + .p-slider::before{ transform:translateX(16px); }
+.p-switch input:focus-visible + .p-slider{ outline:2px solid var(--accent); outline-offset:2px; }
+
+.o-suboption{ margin-top:14px; padding-top:12px; border-top:1px solid var(--line-soft); transition:opacity .2s; }
+.o-suboption.o-disabled{ opacity:.4; pointer-events:none; }
+.o-suboption-label{ margin-bottom:8px; }
+.o-radios{ display:flex; flex-direction:column; gap:8px; }
+.o-radio{ display:inline-flex; align-items:center; gap:8px; font-size:12.5px; cursor:pointer; }
+.o-radio input{ accent-color:var(--accent); width:15px; height:15px; cursor:pointer; }
+
+.o-designs{ display:flex; gap:12px; margin-top:12px; }
+.o-design{ flex:1; min-width:0; cursor:pointer; }
+.o-design input{ position:absolute; opacity:0; width:0; height:0; }
+.o-design-card{ border:1.5px solid var(--line); border-radius:10px; padding:10px; transition:border-color .15s, background .15s; }
+.o-design:hover .o-design-card{ border-color:var(--accent-soft); }
+.o-design input:checked + .o-design-card{ border-color:var(--accent); background:var(--accent-soft); }
+.o-design input:focus-visible + .o-design-card{ outline:2px solid var(--accent); outline-offset:2px; }
+.o-design-name{ font-weight:600; margin-top:8px; font-size:13px; }
+.o-design-desc{ font-size:11px; color:var(--muted); margin-top:1px; }
+.o-design-illus{ height:60px; border-radius:8px; background:var(--bg-2); padding:10px; display:flex; flex-direction:column; justify-content:center; gap:6px; overflow:hidden; }
+.o-illus-composer{ background:var(--card-2); border:1px solid var(--line); border-radius:6px; }
+.o-illus-1 .o-illus-composer{ height:22px; }
+.o-illus-1 .o-illus-bar{ height:6px; border-radius:999px; background:linear-gradient(90deg, var(--accent) 62%, var(--line) 62%); }
+.o-illus-2 .o-illus-composer{ height:40px; display:flex; align-items:flex-end; padding:5px; }
+.o-illus-2 .o-illus-toolbar{ display:flex; align-items:center; gap:4px; width:100%; }
+.o-illus-2 .o-illus-plus{ width:8px; height:8px; border-radius:50%; border:1.5px solid var(--muted); }
+.o-illus-2 .o-illus-pill{ width:26px; height:7px; border-radius:999px; background:linear-gradient(90deg, var(--accent) 60%, var(--line) 60%); }
+.o-illus-2 .o-illus-chip{ margin-left:auto; width:22px; height:9px; border-radius:3px; background:var(--line); }
+
+.p-kbd{
+  font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:11.5px; padding:5px 9px;
+  border:1px solid var(--line); border-radius:6px; background:var(--bg-2); color:inherit;
+  cursor:pointer; white-space:nowrap; flex:none;
+}
+.p-kbd:hover{ border-color:var(--accent); color:var(--accent); }
+.p-kbd.flash{ background:var(--accent); color:#fff; border-color:var(--accent); }
+
+/* Demo-only knobs */
+.knob{ display:grid; grid-template-columns:106px 1fr 44px; align-items:center; gap:10px; }
+.knob + .knob{ margin-top:11px; }
+.knob-label{ font-size:12.5px; font-weight:600; }
+.knob-label span{ font-weight:400; font-size:10px; color:var(--muted); }
+.knob output{ text-align:right; font-family:var(--mono); font-size:12px; font-variant-numeric:tabular-nums; color:var(--muted); }
+input[type="range"]{ width:100%; accent-color:var(--accent); cursor:pointer; height:20px; }
+.presets{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; padding-top:13px; border-top:1px solid var(--line-soft); }
+.chip{
+  font:inherit; font-size:12px; padding:6px 11px; border-radius:999px; cursor:pointer;
+  border:1px solid var(--line); background:var(--card-2); color:inherit;
+}
+.chip:hover{ border-color:var(--accent); color:var(--accent); }
+.chip[aria-pressed="true"]{ background:var(--accent); border-color:var(--accent); color:#fff; }
+.seg{ display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; flex:none; }
+.seg button{ font:inherit; font-size:12px; padding:6px 12px; border:none; background:var(--card-2); color:var(--muted); cursor:pointer; }
+.seg button[aria-pressed="true"]{ background:var(--accent); color:#fff; }
+
+/* ==========================================================================
+   Content sections
+   ========================================================================== */
+.features{ padding:60px 0 10px; }
+.feat-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+@media (max-width:900px){ .feat-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:600px){ .feat-grid{ grid-template-columns:1fr; } }
+.feat{ padding:20px; border-radius:var(--radius); border:1px solid var(--line); background:var(--card); }
+.feat h3{ font-size:16px; margin-bottom:6px; font-family:inherit; font-weight:650; }
+.feat p{ font-size:14px; color:var(--muted); }
+.feat-ico{ display:flex; align-items:center; gap:5px; height:22px; margin-bottom:12px; }
+.swatch{ width:22px; height:6px; border-radius:999px; }
+/* Each card is labelled with the actual thing it produces: a countdown, a
+   badge, a keycap. Mono, because all of it is readout, not prose. */
+.feat-data{ font-family:var(--mono); font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+.feat-badge{ display:inline-block; padding:1px 5px; border-radius:4px; background:var(--accent); color:#fff; font-family:var(--mono); font-size:11px; font-weight:700; }
+
+.how{ padding:70px 0 10px; }
+.how-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+@media (max-width:800px){ .how-grid{ grid-template-columns:1fr; } }
+.step{ padding:22px; border-radius:var(--radius); border:1px solid var(--line); background:var(--card); }
+/* The tag names the mechanism the step actually uses, which carries more than
+   a 1 / 2 / 3 would: these are three properties, not an ordered sequence. */
+.step-tag{ display:inline-block; font-family:var(--mono); font-size:11px; padding:3px 8px; border-radius:6px; background:var(--accent-soft); color:var(--accent); margin-bottom:13px; }
+.step h3{ font-size:16px; font-weight:650; margin-bottom:6px; }
+.step p{ font-size:14px; color:var(--muted); }
+.endpoints{
+  margin-top:14px; padding:16px 18px; border-radius:12px; border:1px solid var(--line);
+  background:var(--bg-2); font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12.5px;
+  color:var(--muted); overflow-x:auto;
+}
+.endpoints b{ color:var(--accent); font-weight:600; }
+.endpoints div + div{ margin-top:6px; }
+
+.privacy{ padding:70px 0 10px; }
+.privacy-card{ padding:30px; border-radius:18px; border:1px solid var(--line); background:var(--card); display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:30px; align-items:center; }
+@media (max-width:800px){ .privacy-card{ grid-template-columns:1fr; padding:24px; gap:20px; } }
+.privacy-card h2{ font-size:clamp(24px,3vw,32px); margin-bottom:10px; }
+.no-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; }
+.no-list li{ display:flex; gap:11px; font-size:14.5px; }
+.tick{ flex:none; width:20px; height:20px; border-radius:50%; background:var(--accent-soft); color:var(--accent); display:grid; place-items:center; font-size:12px; font-weight:700; margin-top:1px; }
+
+.install{ padding:70px 0 10px; }
+.install-grid{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; }
+@media (max-width:800px){ .install-grid{ grid-template-columns:1fr; } }
+.install-card{ padding:26px; border-radius:var(--radius); border:1px solid var(--line); background:var(--card); }
+.install-card h3{ font-size:18px; margin-bottom:8px; }
+.install-card > p{ font-size:14px; color:var(--muted); margin-bottom:18px; }
+ol.steps{ margin:0; padding-left:20px; display:flex; flex-direction:column; gap:9px; font-size:14px; }
+ol.steps code{ font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12.5px; background:var(--bg-2); border:1px solid var(--line-soft); padding:1px 6px; border-radius:5px; }
+.copy{ font:inherit; font-size:11px; margin-left:6px; padding:2px 7px; border-radius:5px; border:1px solid var(--line); background:var(--card-2); color:var(--muted); cursor:pointer; }
+.copy:hover{ color:var(--accent); border-color:var(--accent); }
+
+.faq{ padding:70px 0 40px; }
+.faq-list{ border-top:1px solid var(--line); }
+details{ border-bottom:1px solid var(--line); }
+summary{ cursor:pointer; padding:17px 30px 17px 0; font-weight:600; font-size:15.5px; position:relative; list-style:none; }
+summary::-webkit-details-marker{ display:none; }
+summary::after{ content:"+"; position:absolute; right:4px; top:15px; font-size:19px; font-weight:400; color:var(--muted); transition:transform .2s; }
+details[open] summary::after{ transform:rotate(45deg); }
+details p{ padding:0 30px 18px 0; color:var(--muted); font-size:14.5px; margin-top:-4px; }
+
+footer{ border-top:1px solid var(--line); background:var(--bg-2); padding:34px 0; }
+.foot-in{ display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; font-size:13px; color:var(--muted); }
+.foot-links{ display:flex; flex-wrap:wrap; gap:18px; }
+.foot-links a{ text-decoration:none; }
+.foot-links a:hover{ color:var(--text); }
+.foot-note{ margin-top:14px; font-size:12px; color:var(--muted); max-width:640px; }
+
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior:auto; }
+  *,*::before,*::after{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top">
+      <img src="data:image/png;base64,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" alt="" />
+      Claude Usage Bar
+    </a>
+    <nav class="nav-links">
+      <a href="#demo">Demo</a>
+      <a href="#how">How it works</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/Coldcomplex1/Claude-Usage-Bar">GitHub</a>
+    </nav>
+    <a class="btn btn-primary btn-sm" href="https://chromewebstore.google.com/detail/claude-usage-bar-track-yo/jlomdmgiaoldnhjfhehgjjkgnlighmeo">Add to Chrome</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap hero-in">
+      <p class="eyebrow">Free Chrome extension</p>
+      <h1>See how much Claude you have left.</h1>
+      <p class="lede">
+        Claude Usage Bar puts your 5 hour session and your weekly limits in a slim bar
+        under the chat box. You can see where you stand before you run out, instead of
+        finding out halfway through a thought.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/claude-usage-bar-track-yo/jlomdmgiaoldnhjfhehgjjkgnlighmeo">Add to Chrome</a>
+        <a class="btn btn-ghost" href="https://github.com/Coldcomplex1/Claude-Usage-Bar">View the source</a>
+      </div>
+      <p class="hero-note">
+        <b>Nothing to set up.</b> No API key, no token, no second login. If you are signed in
+        to Claude, it already works. Runs on Chrome, Edge, Brave, Arc and Opera.
+      </p>
+      <div class="hero-readout">
+        <p class="hero-cap">Sample readout</p>
+        <div class="cub-bar" id="hero-bar"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo" id="demo">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Try it</p>
+        <h2>This is the actual bar, running on made up numbers.</h2>
+        <p class="lede">
+          Everything below the browser frame is the extension's real markup and styling.
+          Drag the sliders and it behaves the way it would on your account. Click the
+          extension icon in the toolbar to open the popup.
+        </p>
+      </div>
+
+      <div class="demo-grid">
+        <div class="demo-stage">
+          <div class="mock" id="mock" data-claude-theme="light">
+            <div class="mock-chrome">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="mock-tab"><img src="data:image/png;base64,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" alt="" />Claude</span>
+              <span class="mock-url">claude.ai/chat</span>
+              <span class="mock-ext">
+                <button class="ext-icon" id="ext-icon" aria-expanded="false" aria-label="Open the extension popup">
+                  <img src="data:image/png;base64,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" alt="" />
+                  <span class="ext-badge" id="ext-badge">42</span>
+                </button>
+              </span>
+            </div>
+
+            <div class="mock-body">
+              <div class="chat">
+                <div class="msg msg-user">How much usage do I have left?</div>
+                <div class="msg msg-ai">
+                  <span class="who">Claude</span>
+                  I have no idea, honestly. Look just under the box, that little bar is
+                  the extension keeping track for you.
+                </div>
+              </div>
+
+              <div class="cmp">
+                <div class="cmp-input">Reply to Claude...</div>
+                <div class="cmp-tools">
+                  <button class="cmp-plus" tabindex="-1" aria-hidden="true">+</button>
+                  <!-- Design 2 widget is inserted right here, after the plus button -->
+                  <span class="cmp-spacer"></span>
+                  <span class="cmp-model">Claude Opus 5</span>
+                  <button class="cmp-send" tabindex="-1" aria-hidden="true">&#8593;</button>
+                </div>
+              </div>
+              <!-- Design 1 bar is inserted right here, under the composer -->
+            </div>
+
+            <div class="popup-wrap" id="popup-wrap" hidden>
+              <div class="popup">
+                <div class="p-wrap">
+                  <div class="p-head"><span class="p-title">Claude Usage</span></div>
+                  <div class="p-rows" id="p-rows"></div>
+                  <div class="p-show">
+                    <span class="p-show-label">Show in bar</span>
+                    <div class="p-chks">
+                      <label class="p-chk"><input type="checkbox" data-show="session" checked /><span>Session</span></label>
+                      <label class="p-chk"><input type="checkbox" data-show="allModels" checked /><span>All models</span></label>
+                    </div>
+                  </div>
+                  <div class="p-foot">
+                    <span class="p-status" id="p-status">Updated just now</span>
+                    <div class="p-actions">
+                      <button class="p-btn" id="p-settings">Settings</button>
+                      <button class="p-btn" id="p-refresh">Refresh</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="demo-cap">A pretend Claude window. The extension inside it is real.</p>
+        </div>
+
+        <div class="panel">
+          <p class="panel-tag"><b>Settings</b> the same page the extension ships with</p>
+
+          <div class="o-card">
+            <div class="o-row">
+              <div class="o-row-text">
+                <div class="o-row-label">Turn the extension on or off</div>
+                <div class="o-row-sub">Show your usage on claude.ai.</div>
+              </div>
+              <label class="p-switch" title="Turn the extension on or off">
+                <input type="checkbox" id="c-enabled" checked />
+                <span class="p-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="o-card">
+            <div class="o-row-label">Design</div>
+            <div class="o-row-sub">Choose how your usage shows on claude.ai.</div>
+            <div class="o-designs">
+              <label class="o-design">
+                <input type="radio" name="design" value="1" checked />
+                <div class="o-design-card">
+                  <div class="o-design-illus o-illus-1">
+                    <div class="o-illus-composer"></div>
+                    <div class="o-illus-bar"></div>
+                  </div>
+                  <div class="o-design-name">Design 1</div>
+                  <div class="o-design-desc">Full bar under the chat</div>
+                </div>
+              </label>
+              <label class="o-design">
+                <input type="radio" name="design" value="2" />
+                <div class="o-design-card">
+                  <div class="o-design-illus o-illus-2">
+                    <div class="o-illus-composer">
+                      <div class="o-illus-toolbar">
+                        <span class="o-illus-plus"></span>
+                        <span class="o-illus-pill"></span>
+                        <span class="o-illus-chip"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="o-design-name">Design 2</div>
+                  <div class="o-design-desc">Compact, in the toolbar</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="o-card">
+            <div class="o-row">
+              <div class="o-row-text">
+                <div class="o-row-label">Show usage on the toolbar icon</div>
+                <div class="o-row-sub">A colored number on the extension icon, readable from any tab.</div>
+              </div>
+              <label class="p-switch" title="Show usage on the toolbar icon">
+                <input type="checkbox" id="c-badge" checked />
+                <span class="p-slider"></span>
+              </label>
+            </div>
+            <div class="o-suboption" id="badge-opts">
+              <div class="o-row-sub o-suboption-label">Badge shows</div>
+              <div class="o-radios">
+                <label class="o-radio"><input type="radio" name="badge-source" value="session" checked /><span>Session (5h)</span></label>
+                <label class="o-radio"><input type="radio" name="badge-source" value="allModels" /><span>Weekly, all models (7d)</span></label>
+                <label class="o-radio"><input type="radio" name="badge-source" value="highest" /><span>Highest of the two</span></label>
+              </div>
+            </div>
+          </div>
+
+          <p class="panel-tag"><b>Demo knobs</b> your account fills these in for real</p>
+
+          <div class="o-card">
+            <div class="knob">
+              <label class="knob-label" for="c-session">Session <span>5h</span></label>
+              <input type="range" id="c-session" min="0" max="100" value="42" />
+              <output id="o-session">42%</output>
+            </div>
+            <div class="knob">
+              <label class="knob-label" for="c-all">All models <span>7d</span></label>
+              <input type="range" id="c-all" min="0" max="100" value="68" />
+              <output id="o-all">68%</output>
+            </div>
+            <div class="knob">
+              <label class="knob-label" for="c-opus">Opus <span>7d</span></label>
+              <input type="range" id="c-opus" min="0" max="100" value="12" />
+              <output id="o-opus">12%</output>
+            </div>
+            <div class="presets">
+              <button class="chip" data-preset="low">Plenty left</button>
+              <button class="chip" data-preset="mid">Getting busy</button>
+              <button class="chip" data-preset="high">Almost out</button>
+            </div>
+          </div>
+
+          <div class="o-card">
+            <div class="o-row">
+              <div class="o-row-text">
+                <div class="o-row-label">Account includes Opus</div>
+                <div class="o-row-sub">The Opus row appears on its own when your plan has one.</div>
+              </div>
+              <label class="p-switch" title="Account includes Opus">
+                <input type="checkbox" id="c-opus-on" checked />
+                <span class="p-slider"></span>
+              </label>
+            </div>
+            <div class="o-row">
+              <div class="o-row-text">
+                <div class="o-row-label">Claude appearance</div>
+                <div class="o-row-sub">The bar follows the theme you use on claude.ai.</div>
+              </div>
+              <div class="seg" id="theme-seg">
+                <button type="button" data-theme="light" aria-pressed="true">Light</button>
+                <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+              </div>
+            </div>
+            <div class="o-row">
+              <div class="o-row-text">
+                <div class="o-row-label">Keyboard shortcut</div>
+                <div class="o-row-sub">Hides and shows the bar. It works on this page too, try it.</div>
+              </div>
+              <button class="p-kbd" id="c-hotkey">Ctrl + Shift + U</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">What it does</p>
+        <h2>Small extension, few opinions, no nagging.</h2>
+      </div>
+      <div class="feat-grid">
+        <div class="feat">
+          <div class="feat-ico">
+            <span class="swatch" style="background:#378add"></span>
+            <span class="swatch" style="background:#d85a30"></span>
+            <span class="swatch" style="background:#e2564d"></span>
+          </div>
+          <h3>Colors you read without reading</h3>
+          <p>Blue while you have room, orange once you pass 30 percent, red past 80. After a day you stop reading the number and just glance.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-ico"><span class="swatch" style="width:44px;background:var(--line)"></span></div>
+          <h3>Two ways to wear it</h3>
+          <p>A full bar under the chat, or a compact readout tucked into the composer toolbar next to the plus button. Pick whichever gets in your way less.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-ico"><span class="feat-data">resets in 3h 12m</span></div>
+          <h3>A countdown to the reset</h3>
+          <p>Every window shows how long until it refills, so you can decide whether to wait it out or switch to a lighter model for a while.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-ico"><span class="feat-badge">68</span></div>
+          <h3>On the toolbar icon too</h3>
+          <p>Turn on the badge and your usage sits on the extension icon as a colored number, visible from any tab, not just from Claude.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-ico"><span class="feat-data">Ctrl + Shift + U</span></div>
+          <h3>One key to hide it</h3>
+          <p>Hide and show the bar without opening anything. If the shortcut clashes with something else, rebind it in your browser's shortcut settings.</p>
+        </div>
+        <div class="feat">
+          <div class="feat-ico"><span class="feat-data">work / personal</span></div>
+          <h3>More than one account</h3>
+          <p>If you belong to several organizations, the extension finds the one with your real usage, and you can override the choice from Settings.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">How it works</p>
+        <h2>It asks Claude the same thing Claude asks itself.</h2>
+      </div>
+      <div class="how-grid">
+        <div class="step">
+          <div class="step-tag">your session cookie</div>
+          <h3>It uses the session you already have</h3>
+          <p>The extension calls the same endpoints claude.ai calls for its own usage screen, signed in as you by the cookie already in your browser. There is nothing to paste in.</p>
+        </div>
+        <div class="step">
+          <div class="step-tag">chrome.alarms</div>
+          <h3>It refreshes on a timer</h3>
+          <p>A five minute alarm keeps the numbers current even when no Claude tab is open. When a tab is open, that tab does the fetching and the bar updates every minute while you look at it.</p>
+        </div>
+        <div class="step">
+          <div class="step-tag">storage.local</div>
+          <h3>It keeps everything on your machine</h3>
+          <p>Your preferences and the last numbers it saw live in your browser's local storage. There is no account, no server on our side, and nothing to sync.</p>
+        </div>
+      </div>
+      <div class="endpoints">
+        <div><b>GET</b> /api/organizations</div>
+        <div><b>GET</b> /api/organizations/{id}/usage</div>
+        <div style="margin-top:12px;opacity:.75">five_hour &nbsp; seven_day &nbsp; seven_day_opus</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="privacy" id="privacy">
+    <div class="wrap">
+      <div class="privacy-card">
+        <div>
+          <p class="eyebrow">Privacy</p>
+          <h2>The short version: it does not phone home.</h2>
+          <p class="lede">The only host the extension ever talks to is claude.ai, and that is your own account. The code is public if you would rather check than take our word for it.</p>
+          <p style="margin-top:18px"><a class="btn btn-ghost btn-sm" href="/privacy">Read the privacy policy</a></p>
+        </div>
+        <ul class="no-list">
+          <li><span class="tick">&#10003;</span><span>It never reads, stores or sends your conversations.</span></li>
+          <li><span class="tick">&#10003;</span><span>It sends nothing to any third party server. There is no analytics and no tracking.</span></li>
+          <li><span class="tick">&#10003;</span><span>It never asks for an API key, a token or a password.</span></li>
+          <li><span class="tick">&#10003;</span><span>Uninstalling it removes everything it stored.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="install" id="install">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Install</p>
+        <h2>Two ways in, both take a minute.</h2>
+      </div>
+      <div class="install-grid">
+        <div class="install-card">
+          <h3>From the Chrome Web Store</h3>
+          <p>The easy one. Reviewed, signed and updated automatically.</p>
+          <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/claude-usage-bar-track-yo/jlomdmgiaoldnhjfhehgjjkgnlighmeo">Add to Chrome</a>
+          <p style="margin-top:16px;font-size:13px;color:var(--muted)">Works in any Chromium browser: Chrome, Edge, Brave, Arc, Opera.</p>
+        </div>
+        <div class="install-card">
+          <h3>Or run it from source</h3>
+          <p>For anyone who would rather read the code first.</p>
+          <ol class="steps">
+            <li>Download or clone <a href="https://github.com/Coldcomplex1/Claude-Usage-Bar">the repository</a>.</li>
+            <li>Open <code>chrome://extensions</code><button class="copy" id="copy-btn" type="button">copy</button></li>
+            <li>Turn on Developer mode, top right.</li>
+            <li>Click Load unpacked and pick the <code>claude-extension</code> folder.</li>
+            <li>Open or refresh claude.ai.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Questions</p>
+        <h2>The things people ask.</h2>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary>The bar says 0 percent and I know that is wrong.</summary>
+          <p>You are probably in more than one organization, and the extension locked onto the wrong one. Open Settings, click Change next to Account, and pick the one showing your real numbers. Use automatic puts it back the way it was.</p>
+        </details>
+        <details>
+          <summary>Do I need an API key or a paid plan?</summary>
+          <p>Neither. It reads the usage of whatever Claude account you are already signed in to, free or paid. There is nothing to buy and nothing to paste in.</p>
+        </details>
+        <details>
+          <summary>Does it slow Claude down?</summary>
+          <p>No. It makes one small request every few minutes and draws a few divs. It never touches the conversation itself.</p>
+        </details>
+        <details>
+          <summary>The bar shows a dash, or an exclamation mark.</summary>
+          <p>A dash means it has no numbers yet, usually because you are signed out. An exclamation mark means the request failed. Refreshing claude.ai fixes most of it. If it sticks around, Claude may have changed something on their end.</p>
+        </details>
+        <details>
+          <summary>Can this break?</summary>
+          <p>Yes, and it is worth saying plainly. The usage endpoints are internal to Claude and undocumented, so Anthropic can change them at any time without warning. If that happens the bar goes quiet until the extension is updated.</p>
+        </details>
+        <details>
+          <summary>Can I change the keyboard shortcut?</summary>
+          <p>Open <code>chrome://extensions/shortcuts</code> and rebind it there. The default is Ctrl and Shift and U, or Command and Shift and U on a Mac.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-in">
+      <span>Claude Usage Bar, MIT licensed.</span>
+      <span class="foot-links">
+        <a href="https://chromewebstore.google.com/detail/claude-usage-bar-track-yo/jlomdmgiaoldnhjfhehgjjkgnlighmeo">Chrome Web Store</a>
+        <a href="https://github.com/Coldcomplex1/Claude-Usage-Bar">GitHub</a>
+        <a href="/privacy">Privacy policy</a>
+      </span>
+    </div>
+    <p class="foot-note">
+      Not affiliated with, endorsed by, or sponsored by Anthropic. Claude is a trademark
+      of Anthropic PBC. The extension relies on undocumented Claude features that can
+      change over time.
+    </p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  // ------------------------------------------------------------------
+  // Lifted straight from the extension so the demo behaves like the real
+  // thing: content.js for the thresholds and the two layouts, usage.js for
+  // the reset countdown, background.js for the badge colors.
+  // ------------------------------------------------------------------
+  var SEGS = [
+    { key:"session",   label:"Session",    sub:"5h", opus:false, ring:false, tip:"Current rolling 5-hour session" },
+    { key:"allModels", label:"All models", sub:"7d", opus:false, ring:true,  tip:"Weekly usage, across all models" },
+    { key:"opus",      label:"Opus",       sub:"7d", opus:true,  ring:true,  tip:"Weekly Opus allowance" }
+  ];
+  var RING_C = 2 * Math.PI * 8;
+
+  function colorClass(p){ return p > 80 ? "cub-high" : p >= 30 ? "cub-mid" : "cub-low"; }
+  function popClass(p){ return p == null ? "" : p > 80 ? "high" : p >= 30 ? "mid" : "low"; }
+  function badgeColor(p){ return p > 80 ? "#e2564d" : p >= 30 ? "#d85a30" : "#378add"; }
+
+  function fmtReset(iso){
+    if (!iso) return "";
+    var t = new Date(iso).getTime(); if (isNaN(t)) return "";
+    var ms = t - Date.now(); if (ms <= 0) return "now";
+    var h = Math.floor(ms/3600000), m = Math.floor((ms%3600000)/60000);
+    if (h >= 24){ var d = Math.floor(h/24); return d+"d "+(h%24)+"h"; }
+    if (h > 0) return h+"h "+m+"m";
+    return m+"m";
+  }
+
+  // ------------------------------------------------------------------
+  // Demo state. One object, one render.
+  // ------------------------------------------------------------------
+  var start = Date.now();
+  var RESETS = {
+    session:   start + (3*3600 + 12*60) * 1000,
+    allModels: start + (4*24 + 6) * 3600 * 1000,
+    opus:      start + (4*24 + 6) * 3600 * 1000
+  };
+
+  var S = {
+    design:"1", enabled:true,
+    session:42, allModels:68, opus:12, opusAvailable:true,
+    showSession:true, showAllModels:true,
+    badgeEnabled:true, badgeSource:"session",
+    theme:"light", popupOpen:false
+  };
+
+  function iso(ms){ return new Date(ms).toISOString(); }
+  function win(pct, resetAt, available){
+    if (!available) return { available:false, pct:null, resetAt:null };
+    return { available:true, pct:pct, resetAt:iso(resetAt) };
+  }
+  function data(){
+    return {
+      session:   win(S.session,   RESETS.session,   true),
+      allModels: win(S.allModels, RESETS.allModels, true),
+      opus:      win(S.opus,      RESETS.opus,      S.opusAvailable)
+    };
+  }
+  function showMap(){ return { session:S.showSession, allModels:S.showAllModels }; }
+
+  // ------------------------------------------------------------------
+  // Design 1: the slim bar under the composer.
+  // ------------------------------------------------------------------
+  function segHtml(s){
+    return '<div class="cub-seg" role="img" data-seg="'+s.key+'" title="'+s.tip+'">'+
+      '<span class="cub-label"><span class="cub-name">'+s.label+'</span> <span class="cub-sub">'+s.sub+'</span></span>'+
+      '<span class="cub-track"><span class="cub-fill"></span></span>'+
+      '<span class="cub-val">&#8211;</span>'+
+      '<span class="cub-reset"></span>'+
+    '</div>';
+  }
+  var barEl = document.createElement("div");
+  barEl.id = "cub-bar"; barEl.className = "cub-bar";
+  barEl.innerHTML = SEGS.map(segHtml).join("");
+  document.querySelector(".mock-body").appendChild(barEl);
+
+  function fillSeg(node, d, label){
+    var val = node.querySelector(".cub-val");
+    var fill = node.querySelector(".cub-fill");
+    var reset = node.querySelector(".cub-reset");
+    if (!d || !d.available || d.pct == null){
+      val.textContent = "–"; fill.style.width = "0%"; fill.className = "cub-fill"; reset.textContent = "";
+      node.setAttribute("aria-label", label + ": no data");
+      return;
+    }
+    var pct = Math.max(0, Math.min(100, Math.round(d.pct)));
+    var r = pct > 0 ? fmtReset(d.resetAt) : "";
+    val.textContent = pct + "%";
+    fill.style.width = pct + "%";
+    fill.className = "cub-fill " + colorClass(pct);
+    reset.textContent = r;
+    node.setAttribute("aria-label", label + ": " + pct + "% used" + (r ? ", resets in " + r : ""));
+  }
+
+  function renderBar(d, show){
+    var any = false;
+    SEGS.forEach(function(s){
+      var node = barEl.querySelector('[data-seg="'+s.key+'"]');
+      var w = d[s.key];
+      var canShow = s.opus ? !!(w && w.available) : (show[s.key] !== false);
+      node.hidden = !canShow;
+      if (canShow){ any = true; fillSeg(node, w, s.label); }
+    });
+    barEl.style.display = (any && S.enabled && S.design === "1") ? "" : "none";
+  }
+
+  // A second, read-only instance of the same bar for the hero. It fills in on
+  // load, so the page opens with the widget doing its job rather than a picture
+  // of it. Same builder, same fill, fixed numbers.
+  var heroEl = document.getElementById("hero-bar");
+  var HERO = { session:47, allModels:71, opus:12 };
+  heroEl.innerHTML = SEGS.map(segHtml).join("");
+
+  function paintHero(empty){
+    SEGS.forEach(function(s){
+      var node = heroEl.querySelector('[data-seg="'+s.key+'"]');
+      fillSeg(node, win(empty ? 0 : HERO[s.key], RESETS[s.key], true), s.label);
+    });
+  }
+  function heroIntro(){
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return paintHero(false);
+    paintHero(true);
+    SEGS.forEach(function(s, i){
+      var node = heroEl.querySelector('[data-seg="'+s.key+'"]');
+      setTimeout(function(){
+        fillSeg(node, win(HERO[s.key], RESETS[s.key], true), s.label);
+      }, 260 + i * 130);
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // Design 2: the compact widget in the composer toolbar.
+  // ------------------------------------------------------------------
+  function inlineSegHtml(s){
+    var indicator = s.ring
+      ? '<span class="cub-i-ring">'+
+          '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">'+
+            '<circle class="cub-i-ring-bg" cx="10" cy="10" r="8"></circle>'+
+            '<circle class="cub-i-ring-fill" cx="10" cy="10" r="8"></circle>'+
+          '</svg>'+
+        '</span>'
+      : '<span class="cub-i-bar"><span class="cub-i-fill"></span></span>';
+    var val = '<span class="cub-i-val">&#8211;</span>';
+    var inner = s.ring ? (indicator + val) : (val + indicator);
+    return '<span class="cub-i-seg" role="img" data-seg="'+s.key+'" title="'+s.tip+'">'+ inner +'</span>';
+  }
+  var inlineEl = document.createElement("div");
+  inlineEl.id = "cub-inline"; inlineEl.className = "cub-inline";
+  inlineEl.innerHTML = SEGS.map(inlineSegHtml).join("");
+  var plus = document.querySelector(".cmp-plus");
+  plus.insertAdjacentElement("afterend", inlineEl);
+
+  function fillInlineSeg(node, d, s){
+    var val = node.querySelector(".cub-i-val");
+    if (!d || !d.available || d.pct == null){
+      val.textContent = "–";
+      if (s.ring){
+        var rf0 = node.querySelector(".cub-i-ring-fill");
+        rf0.style.strokeDasharray = RING_C; rf0.style.strokeDashoffset = RING_C;
+        rf0.setAttribute("class", "cub-i-ring-fill");
+      } else {
+        var f0 = node.querySelector(".cub-i-fill");
+        f0.style.width = "0%"; f0.className = "cub-i-fill";
+      }
+      node.setAttribute("aria-label", s.label + ": no data");
+      node.setAttribute("title", s.label + " (" + s.sub + "): no data");
+      return;
+    }
+    var pct = Math.max(0, Math.min(100, Math.round(d.pct)));
+    var r = pct > 0 ? fmtReset(d.resetAt) : "";
+    var cc = colorClass(pct);
+    val.textContent = pct + "%";
+    if (s.ring){
+      var rf = node.querySelector(".cub-i-ring-fill");
+      rf.style.strokeDasharray = RING_C;
+      rf.style.strokeDashoffset = RING_C * (1 - pct / 100);
+      rf.setAttribute("class", "cub-i-ring-fill " + cc);
+    } else {
+      var f = node.querySelector(".cub-i-fill");
+      f.style.width = pct + "%";
+      f.className = "cub-i-fill " + cc;
+    }
+    node.setAttribute("aria-label", s.label + ": " + pct + "% used" + (r ? ", resets in " + r : ""));
+    node.setAttribute("title", s.label + " (" + s.sub + "): " + pct + "%" + (r ? ", resets in " + r : ""));
+  }
+
+  function renderInline(d, show){
+    var any = false;
+    SEGS.forEach(function(s){
+      var node = inlineEl.querySelector('[data-seg="'+s.key+'"]');
+      var w = d[s.key];
+      var canShow = s.opus ? !!(w && w.available) : (show[s.key] !== false);
+      node.hidden = !canShow;
+      if (canShow){ any = true; fillInlineSeg(node, w, s); }
+    });
+    inlineEl.style.display = (any && S.enabled && S.design === "2") ? "" : "none";
+  }
+
+  // ------------------------------------------------------------------
+  // Popup replica and the toolbar badge.
+  // ------------------------------------------------------------------
+  var rowsEl = document.getElementById("p-rows");
+  function rowHtml(label, sub, d){
+    var pct = d && d.available && d.pct != null ? Math.round(d.pct) : null;
+    var reset = d && d.resetAt && pct > 0 ? fmtReset(d.resetAt) : "";
+    return '<div class="p-row"><div class="p-row-head">'+
+      '<span class="p-label">'+label+'</span><span class="p-sub">'+sub+'</span>'+
+      '<span class="p-val">'+(pct == null ? "–" : pct+"%")+'</span></div>'+
+      '<div class="p-track"><div class="p-fill '+popClass(pct)+'" style="width:'+(pct == null ? 0 : pct)+'%"></div></div>'+
+      (reset ? '<div class="p-reset">resets '+reset+'</div>' : '')+
+    '</div>';
+  }
+  function renderPopup(d){
+    var html = rowHtml("Session","5h",d.session) + rowHtml("All models","7d",d.allModels);
+    if (d.opus && d.opus.available) html += rowHtml("Opus","7d",d.opus);
+    rowsEl.innerHTML = html;
+  }
+
+  var badgeEl = document.getElementById("ext-badge");
+  function winPct(m){ return (m && m.available && m.pct != null) ? Math.round(m.pct) : null; }
+  function badgePct(d, source){
+    if (source === "session") return winPct(d.session);
+    if (source === "allModels") return winPct(d.allModels);
+    var s = winPct(d.session), a = winPct(d.allModels);
+    if (s == null) return a;
+    if (a == null) return s;
+    return Math.max(s, a);
+  }
+  function renderBadge(d){
+    if (!S.enabled || !S.badgeEnabled){ badgeEl.hidden = true; return; }
+    var pct = badgePct(d, S.badgeSource);
+    if (pct == null){ badgeEl.hidden = true; return; }
+    badgeEl.hidden = false;
+    badgeEl.textContent = String(Math.max(0, Math.min(100, pct)));
+    badgeEl.style.background = badgeColor(pct);
+  }
+
+  // ------------------------------------------------------------------
+  // One render for everything.
+  // ------------------------------------------------------------------
+  var mock = document.getElementById("mock");
+  function render(){
+    var d = data(), show = showMap();
+    mock.setAttribute("data-claude-theme", S.theme);
+    renderBar(d, show);
+    renderInline(d, show);
+    renderPopup(d);
+    renderBadge(d);
+  }
+
+  // ------------------------------------------------------------------
+  // Controls.
+  // ------------------------------------------------------------------
+  function on(el, ev, fn){ if (el) el.addEventListener(ev, fn); }
+  var $ = function(id){ return document.getElementById(id); };
+
+  on($("c-enabled"), "change", function(e){ S.enabled = e.target.checked; render(); });
+
+  document.querySelectorAll('input[name="design"]').forEach(function(r){
+    on(r, "change", function(){ if (r.checked){ S.design = r.value; render(); } });
+  });
+
+  var badgeOpts = $("badge-opts");
+  on($("c-badge"), "change", function(e){
+    S.badgeEnabled = e.target.checked;
+    badgeOpts.classList.toggle("o-disabled", !e.target.checked);
+    render();
+  });
+  document.querySelectorAll('input[name="badge-source"]').forEach(function(r){
+    on(r, "change", function(){ if (r.checked){ S.badgeSource = r.value; render(); } });
+  });
+
+  // Sliders. The output label and the widget move together.
+  var sliders = [
+    { input:"c-session", out:"o-session", key:"session" },
+    { input:"c-all",     out:"o-all",     key:"allModels" },
+    { input:"c-opus",    out:"o-opus",    key:"opus" }
+  ];
+  sliders.forEach(function(s){
+    var el = $(s.input), out = $(s.out);
+    on(el, "input", function(){
+      S[s.key] = Number(el.value);
+      out.textContent = el.value + "%";
+      clearPreset();
+      render();
+    });
+  });
+  function setSliders(v){
+    sliders.forEach(function(s){
+      var el = $(s.input);
+      el.value = v[s.key];
+      $(s.out).textContent = v[s.key] + "%";
+      S[s.key] = v[s.key];
+    });
+    render();
+  }
+
+  var PRESETS = {
+    low:  { session:12, allModels:21, opus:6 },
+    mid:  { session:47, allModels:62, opus:38 },
+    high: { session:93, allModels:88, opus:71 }
+  };
+  var presetBtns = document.querySelectorAll("[data-preset]");
+  function clearPreset(){ presetBtns.forEach(function(b){ b.setAttribute("aria-pressed","false"); }); }
+  presetBtns.forEach(function(b){
+    on(b, "click", function(){
+      clearPreset();
+      b.setAttribute("aria-pressed","true");
+      setSliders(PRESETS[b.getAttribute("data-preset")]);
+    });
+  });
+
+  on($("c-opus-on"), "change", function(e){ S.opusAvailable = e.target.checked; render(); });
+
+  document.querySelectorAll("#theme-seg button").forEach(function(b){
+    on(b, "click", function(){
+      document.querySelectorAll("#theme-seg button").forEach(function(x){ x.setAttribute("aria-pressed","false"); });
+      b.setAttribute("aria-pressed","true");
+      S.theme = b.getAttribute("data-theme");
+      render();
+    });
+  });
+
+  // Show in bar, wired from the popup and kept in sync with the state.
+  document.querySelectorAll("[data-show]").forEach(function(cb){
+    on(cb, "change", function(){
+      if (cb.getAttribute("data-show") === "session") S.showSession = cb.checked;
+      else S.showAllModels = cb.checked;
+      render();
+    });
+  });
+
+  // The hotkey. The key cap is clickable, and the real combination works too.
+  var hotkeyBtn = $("c-hotkey");
+  function toggleBar(){
+    S.enabled = !S.enabled;
+    $("c-enabled").checked = S.enabled;
+    render();
+    hotkeyBtn.classList.add("flash");
+    setTimeout(function(){ hotkeyBtn.classList.remove("flash"); }, 260);
+  }
+  on(hotkeyBtn, "click", toggleBar);
+  document.addEventListener("keydown", function(e){
+    if ((e.key || "").toLowerCase() !== "u") return;
+    if (!e.shiftKey || !(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    toggleBar();
+  });
+
+  // The popup, opened from the icon in the mock toolbar.
+  var popWrap = $("popup-wrap"), extIcon = $("ext-icon");
+  function setPopup(open){
+    S.popupOpen = open;
+    popWrap.hidden = !open;
+    extIcon.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  on(extIcon, "click", function(e){ e.stopPropagation(); setPopup(!S.popupOpen); });
+  document.addEventListener("click", function(e){
+    if (S.popupOpen && !popWrap.contains(e.target)) setPopup(false);
+  });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") setPopup(false); });
+
+  // Refresh nudges the numbers up a little, which is the only direction usage
+  // moves inside a window, then says so in the footer the way the popup does.
+  on($("p-refresh"), "click", function(){
+    var status = $("p-status");
+    status.textContent = "Updating…";
+    setTimeout(function(){
+      var v = {
+        session:   Math.min(100, S.session   + Math.round(Math.random()*7) + 1),
+        allModels: Math.min(100, S.allModels + Math.round(Math.random()*4)),
+        opus:      Math.min(100, S.opus      + Math.round(Math.random()*3))
+      };
+      clearPreset();
+      setSliders(v);
+      status.textContent = "Updated just now";
+    }, 420);
+  });
+  on($("p-settings"), "click", function(){
+    setPopup(false);
+    var panel = document.querySelector(".panel");
+    panel.scrollIntoView({ behavior:"smooth", block:"center" });
+  });
+
+  // Copy button on the install steps.
+  on($("copy-btn"), "click", function(){
+    var btn = $("copy-btn");
+    var done = function(){ btn.textContent = "copied"; setTimeout(function(){ btn.textContent = "copy"; }, 1400); };
+    try {
+      navigator.clipboard.writeText("chrome://extensions").then(done, function(){ btn.textContent = "select it"; });
+    } catch (err){ btn.textContent = "select it"; }
+  });
+
+  // Keep the reset countdowns honest while the page is open.
+  setInterval(function(){ render(); paintHero(false); }, 30000);
+
+  render();
+  heroIntro();
+})();
+</script>
+</body>
+</html>
