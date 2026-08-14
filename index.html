@@ -21,9 +21,14 @@
   --line:rgba(0,0,0,0.11); --line-soft:rgba(0,0,0,0.06);
   --accent:#d85a30; --accent-ink:#b8451f; --accent-soft:rgba(216,90,48,0.10);
   --blue:#378add; --red:#e2564d;
+  --switch-off:#cfcdc6;
   --shadow:0 1px 2px rgba(0,0,0,.04), 0 10px 30px rgba(0,0,0,.06);
   --shadow-lg:0 2px 6px rgba(0,0,0,.05), 0 24px 60px rgba(0,0,0,.10);
   --radius:14px;
+  /* The extension is a piece of system UI, so the page speaks system UI too:
+     one sans for everything, and a mono that does real work on the numbers. */
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -31,6 +36,7 @@
     --text:#ecebe5; --muted:#a5a29a;
     --line:rgba(255,255,255,0.13); --line-soft:rgba(255,255,255,0.07);
     --accent:#e4744d; --accent-ink:#f0906c; --accent-soft:rgba(226,112,74,0.15);
+    --switch-off:#55554f;
     --shadow:0 1px 2px rgba(0,0,0,.35), 0 10px 30px rgba(0,0,0,.35);
     --shadow-lg:0 2px 8px rgba(0,0,0,.4), 0 30px 70px rgba(0,0,0,.5);
   }
@@ -40,6 +46,7 @@
   --text:#ecebe5; --muted:#a5a29a;
   --line:rgba(255,255,255,0.13); --line-soft:rgba(255,255,255,0.07);
   --accent:#e4744d; --accent-ink:#f0906c; --accent-soft:rgba(226,112,74,0.15);
+  --switch-off:#55554f;
   --shadow:0 1px 2px rgba(0,0,0,.35), 0 10px 30px rgba(0,0,0,.35);
   --shadow-lg:0 2px 8px rgba(0,0,0,.4), 0 30px 70px rgba(0,0,0,.5);
 }
@@ -48,16 +55,17 @@
 html{ scroll-behavior:smooth; }
 body{
   margin:0; background:var(--bg); color:var(--text); overflow-x:clip;
-  font-family:ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;
+  font-family:var(--sans);
   font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
 }
-h1,h2,h3{ font-family:ui-serif,Georgia,"Times New Roman",serif; font-weight:600; letter-spacing:-0.01em; line-height:1.15; margin:0; }
+h1,h2,h3{ font-weight:700; letter-spacing:-0.025em; line-height:1.1; margin:0; text-wrap:balance; }
 p{ margin:0; }
 a{ color:inherit; }
 img{ max-width:100%; }
 .wrap{ width:100%; max-width:1140px; margin:0 auto; padding:0 22px; }
 section{ scroll-margin-top:76px; }
-.eyebrow{ font-size:12px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); }
+:where(a,button,input,summary,[tabindex]):focus-visible{ outline:2px solid var(--accent); outline-offset:3px; border-radius:5px; }
+.eyebrow{ font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); }
 .lede{ color:var(--muted); font-size:17px; }
 .sec-head{ max-width:640px; margin-bottom:34px; }
 .sec-head h2{ font-size:clamp(26px,3.4vw,36px); margin:10px 0 12px; }
@@ -109,6 +117,16 @@ section{ scroll-margin-top:76px; }
 .hero-cta{ display:flex; flex-wrap:wrap; gap:12px; margin-top:28px; }
 .hero-note{ margin-top:18px; font-size:13.5px; color:var(--muted); }
 .hero-note b{ color:var(--text); font-weight:600; }
+
+/* A real instance of the bar, in the page's own colors rather than claude.ai's,
+   so the first thing on screen is the thing being sold. */
+.hero-readout{ margin-top:34px; max-width:480px; }
+.hero-cap{ font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:9px; }
+.hero-readout .cub-bar{
+  margin:0; color:var(--text); background:var(--card); border-color:var(--line);
+  -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:var(--shadow);
+}
+.hero-readout .cub-track{ background:var(--line); }
 
 /* Generic card */
 .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
@@ -201,7 +219,7 @@ section{ scroll-margin-top:76px; }
    with @media (prefers-color-scheme: dark), and here the same rules hang off
    the mock's data-claude-theme so the appearance switch works on its own.
    -------------------------------------------------------------------------- */
-#cub-bar.cub-bar{
+.cub-bar{
   box-sizing:border-box; width:100%; margin:14px auto 0; padding:9px 14px;
   display:flex; flex-direction:column; gap:8px;
   font-family:ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;
@@ -210,68 +228,68 @@ section{ scroll-margin-top:76px; }
   border-radius:12px; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
   position:relative; z-index:5;
 }
-#cub-bar .cub-seg{ display:grid; grid-template-columns:100px minmax(30px,1fr) 42px 58px; column-gap:12px; align-items:center; }
-#cub-bar .cub-seg[hidden]{ display:none; }
-#cub-bar .cub-label{ min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-#cub-bar .cub-name{ font-weight:600; }
-#cub-bar .cub-sub{ font-size:10px; opacity:.5; }
-#cub-bar .cub-track{ display:block; height:5px; border-radius:999px; background:rgba(0,0,0,.09); overflow:hidden; }
-#cub-bar .cub-fill{ display:block; height:100%; width:0; border-radius:999px; background:#b9b8b1; transition:width .4s ease, background .3s ease; }
-#cub-bar .cub-fill.cub-low{ background:#378add; }
-#cub-bar .cub-fill.cub-mid{ background:#d85a30; }
-#cub-bar .cub-fill.cub-high{ background:#e2564d; }
-#cub-bar .cub-val{ text-align:right; font-weight:600; font-variant-numeric:tabular-nums; }
-#cub-bar .cub-reset{ text-align:left; font-size:10px; opacity:.55; white-space:nowrap; overflow:hidden; }
+.cub-bar .cub-seg{ display:grid; grid-template-columns:100px minmax(30px,1fr) 42px 58px; column-gap:12px; align-items:center; }
+.cub-bar .cub-seg[hidden]{ display:none; }
+.cub-bar .cub-label{ min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cub-bar .cub-name{ font-weight:600; }
+.cub-bar .cub-sub{ font-size:10px; opacity:.5; }
+.cub-bar .cub-track{ display:block; height:5px; border-radius:999px; background:rgba(0,0,0,.09); overflow:hidden; }
+.cub-bar .cub-fill{ display:block; height:100%; width:0; border-radius:999px; background:#b9b8b1; transition:width .4s ease, background .3s ease; }
+.cub-bar .cub-fill.cub-low{ background:#378add; }
+.cub-bar .cub-fill.cub-mid{ background:#d85a30; }
+.cub-bar .cub-fill.cub-high{ background:#e2564d; }
+.cub-bar .cub-val{ text-align:right; font-weight:600; font-variant-numeric:tabular-nums; }
+.cub-bar .cub-reset{ text-align:left; font-size:10px; opacity:.55; white-space:nowrap; overflow:hidden; }
 
-.mock[data-claude-theme="dark"] #cub-bar.cub-bar{ color:#e7e7e3; background:rgba(45,45,43,.7); border-color:rgba(255,255,255,.12); }
-.mock[data-claude-theme="dark"] #cub-bar .cub-track{ background:rgba(255,255,255,.13); }
+.mock[data-claude-theme="dark"] .cub-bar{ color:#e7e7e3; background:rgba(45,45,43,.7); border-color:rgba(255,255,255,.12); }
+.mock[data-claude-theme="dark"] .cub-bar .cub-track{ background:rgba(255,255,255,.13); }
 
-#cub-inline.cub-inline{
+.cub-inline{
   display:inline-flex; align-items:center; gap:14px; flex:0 0 auto;
   align-self:center; margin:0 10px; vertical-align:middle;
   font-family:ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;
   font-size:12px; line-height:1; color:#3d3d3a;
 }
-#cub-inline .cub-i-seg{ display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
-#cub-inline .cub-i-seg[hidden]{ display:none; }
-#cub-inline .cub-i-val{ font-weight:600; font-variant-numeric:tabular-nums; }
-#cub-inline .cub-i-bar{ display:inline-block; width:80px; height:5px; border-radius:999px; background:rgba(0,0,0,.12); overflow:hidden; }
-#cub-inline .cub-i-fill{ display:block; height:100%; width:0; border-radius:999px; background:#b9b8b1; transition:width .4s ease, background .3s ease; }
-#cub-inline .cub-i-fill.cub-low{ background:#378add; }
-#cub-inline .cub-i-fill.cub-mid{ background:#d85a30; }
-#cub-inline .cub-i-fill.cub-high{ background:#e2564d; }
-#cub-inline .cub-i-ring{ display:inline-flex; }
-#cub-inline .cub-i-ring svg{ display:block; transform:rotate(-90deg); }
-#cub-inline .cub-i-ring-bg{ fill:none; stroke:rgba(0,0,0,.12); stroke-width:2.5; }
-#cub-inline .cub-i-ring-fill{
+.cub-inline .cub-i-seg{ display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
+.cub-inline .cub-i-seg[hidden]{ display:none; }
+.cub-inline .cub-i-val{ font-weight:600; font-variant-numeric:tabular-nums; }
+.cub-inline .cub-i-bar{ display:inline-block; width:80px; height:5px; border-radius:999px; background:rgba(0,0,0,.12); overflow:hidden; }
+.cub-inline .cub-i-fill{ display:block; height:100%; width:0; border-radius:999px; background:#b9b8b1; transition:width .4s ease, background .3s ease; }
+.cub-inline .cub-i-fill.cub-low{ background:#378add; }
+.cub-inline .cub-i-fill.cub-mid{ background:#d85a30; }
+.cub-inline .cub-i-fill.cub-high{ background:#e2564d; }
+.cub-inline .cub-i-ring{ display:inline-flex; }
+.cub-inline .cub-i-ring svg{ display:block; transform:rotate(-90deg); }
+.cub-inline .cub-i-ring-bg{ fill:none; stroke:rgba(0,0,0,.12); stroke-width:2.5; }
+.cub-inline .cub-i-ring-fill{
   fill:none; stroke:#b9b8b1; stroke-width:2.5; stroke-linecap:round;
   stroke-dasharray:50.265; stroke-dashoffset:50.265;
   transition:stroke-dashoffset .4s ease, stroke .3s ease;
 }
-#cub-inline .cub-i-ring-fill.cub-low{ stroke:#378add; }
-#cub-inline .cub-i-ring-fill.cub-mid{ stroke:#d85a30; }
-#cub-inline .cub-i-ring-fill.cub-high{ stroke:#e2564d; }
+.cub-inline .cub-i-ring-fill.cub-low{ stroke:#378add; }
+.cub-inline .cub-i-ring-fill.cub-mid{ stroke:#d85a30; }
+.cub-inline .cub-i-ring-fill.cub-high{ stroke:#e2564d; }
 
-.mock[data-claude-theme="dark"] #cub-inline.cub-inline{ color:#e7e7e3; }
-.mock[data-claude-theme="dark"] #cub-inline .cub-i-bar{ background:rgba(255,255,255,.16); }
-.mock[data-claude-theme="dark"] #cub-inline .cub-i-ring-bg{ stroke:rgba(255,255,255,.16); }
+.mock[data-claude-theme="dark"] .cub-inline{ color:#e7e7e3; }
+.mock[data-claude-theme="dark"] .cub-inline .cub-i-bar{ background:rgba(255,255,255,.16); }
+.mock[data-claude-theme="dark"] .cub-inline .cub-i-ring-bg{ stroke:rgba(255,255,255,.16); }
 
 /* The mock is far narrower than a real browser window, so on small screens the
    demo tightens the widget rather than letting the row overflow. The extension
    itself keeps its own measurements, it has a whole window to work with. */
 @media (max-width:540px){
-  #cub-inline.cub-inline{ gap:10px; margin:0 6px; }
-  #cub-inline .cub-i-bar{ width:38px; }
+  .cub-inline{ gap:10px; margin:0 6px; }
+  .cub-inline .cub-i-bar{ width:38px; }
   .cmp-model{ display:none; }
 }
 @media (max-width:420px){
   .mock-body{ padding:12px; }
   .cmp{ padding:9px 9px 8px; }
-  #cub-bar.cub-bar{ padding:9px 10px; }
-  #cub-bar .cub-seg{ grid-template-columns:74px minmax(20px,1fr) 34px 44px; column-gap:8px; }
-  #cub-inline.cub-inline{ gap:8px; margin:0 4px; font-size:11px; }
-  #cub-inline .cub-i-seg{ gap:5px; }
-  #cub-inline .cub-i-bar{ width:20px; }
+  .cub-bar{ padding:9px 10px; }
+  .cub-bar .cub-seg{ grid-template-columns:74px minmax(20px,1fr) 34px 44px; column-gap:8px; }
+  .cub-inline{ gap:8px; margin:0 4px; font-size:11px; }
+  .cub-inline .cub-i-seg{ gap:5px; }
+  .cub-inline .cub-i-bar{ width:20px; }
   .cmp-tools{ gap:6px; }
   .cmp-plus, .cmp-send{ width:22px; height:22px; font-size:13px; }
 }
@@ -336,13 +354,11 @@ section{ scroll-margin-top:76px; }
 
 .p-switch{ position:relative; display:inline-block; width:38px; height:22px; flex:none; }
 .p-switch input{ opacity:0; width:0; height:0; position:absolute; }
-.p-slider{ position:absolute; inset:0; cursor:pointer; background:#cfcdc6; border-radius:999px; transition:background .2s; }
+.p-slider{ position:absolute; inset:0; cursor:pointer; background:var(--switch-off); border-radius:999px; transition:background .2s; }
 .p-slider::before{ content:""; position:absolute; height:16px; width:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform .2s; }
 .p-switch input:checked + .p-slider{ background:var(--accent); }
 .p-switch input:checked + .p-slider::before{ transform:translateX(16px); }
 .p-switch input:focus-visible + .p-slider{ outline:2px solid var(--accent); outline-offset:2px; }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .p-slider{ background:#55554f; } }
-:root[data-theme="dark"] .p-slider{ background:#55554f; }
 
 .o-suboption{ margin-top:14px; padding-top:12px; border-top:1px solid var(--line-soft); transition:opacity .2s; }
 .o-suboption.o-disabled{ opacity:.4; pointer-events:none; }
@@ -383,7 +399,7 @@ section{ scroll-margin-top:76px; }
 .knob + .knob{ margin-top:11px; }
 .knob-label{ font-size:12.5px; font-weight:600; }
 .knob-label span{ font-weight:400; font-size:10px; color:var(--muted); }
-.knob output{ text-align:right; font-size:12.5px; font-variant-numeric:tabular-nums; color:var(--muted); }
+.knob output{ text-align:right; font-family:var(--mono); font-size:12px; font-variant-numeric:tabular-nums; color:var(--muted); }
 input[type="range"]{ width:100%; accent-color:var(--accent); cursor:pointer; height:20px; }
 .presets{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; padding-top:13px; border-top:1px solid var(--line-soft); }
 .chip{
@@ -408,13 +424,19 @@ input[type="range"]{ width:100%; accent-color:var(--accent); cursor:pointer; hei
 .feat p{ font-size:14px; color:var(--muted); }
 .feat-ico{ display:flex; align-items:center; gap:5px; height:22px; margin-bottom:12px; }
 .swatch{ width:22px; height:6px; border-radius:999px; }
+/* Each card is labelled with the actual thing it produces: a countdown, a
+   badge, a keycap. Mono, because all of it is readout, not prose. */
+.feat-data{ font-family:var(--mono); font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+.feat-badge{ display:inline-block; padding:1px 5px; border-radius:4px; background:var(--accent); color:#fff; font-family:var(--mono); font-size:11px; font-weight:700; }
 
 .how{ padding:70px 0 10px; }
 .how-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
 @media (max-width:800px){ .how-grid{ grid-template-columns:1fr; } }
 .step{ padding:22px; border-radius:var(--radius); border:1px solid var(--line); background:var(--card); }
-.step-n{ width:26px; height:26px; border-radius:8px; background:var(--accent-soft); color:var(--accent); display:grid; place-items:center; font-size:13px; font-weight:700; margin-bottom:12px; }
-.step h3{ font-size:16px; font-family:inherit; font-weight:650; margin-bottom:6px; }
+/* The tag names the mechanism the step actually uses, which carries more than
+   a 1 / 2 / 3 would: these are three properties, not an ordered sequence. */
+.step-tag{ display:inline-block; font-family:var(--mono); font-size:11px; padding:3px 8px; border-radius:6px; background:var(--accent-soft); color:var(--accent); margin-bottom:13px; }
+.step h3{ font-size:16px; font-weight:650; margin-bottom:6px; }
 .step p{ font-size:14px; color:var(--muted); }
 .endpoints{
   margin-top:14px; padding:16px 18px; border-radius:12px; border:1px solid var(--line);
@@ -503,6 +525,10 @@ footer{ border-top:1px solid var(--line); background:var(--bg-2); padding:34px 0
         <b>Nothing to set up.</b> No API key, no token, no second login. If you are signed in
         to Claude, it already works. Runs on Chrome, Edge, Brave, Arc and Opera.
       </p>
+      <div class="hero-readout">
+        <p class="hero-cap">Sample readout</p>
+        <div class="cub-bar" id="hero-bar"></div>
+      </div>
     </div>
   </section>
 
@@ -734,22 +760,22 @@ footer{ border-top:1px solid var(--line); background:var(--bg-2); padding:34px 0
           <p>A full bar under the chat, or a compact readout tucked into the composer toolbar next to the plus button. Pick whichever gets in your way less.</p>
         </div>
         <div class="feat">
-          <div class="feat-ico"><span style="font-size:15px;font-variant-numeric:tabular-nums;color:var(--muted)">3h 12m</span></div>
+          <div class="feat-ico"><span class="feat-data">resets in 3h 12m</span></div>
           <h3>A countdown to the reset</h3>
           <p>Every window shows how long until it refills, so you can decide whether to wait it out or switch to a lighter model for a while.</p>
         </div>
         <div class="feat">
-          <div class="feat-ico"><span style="display:inline-block;padding:1px 5px;border-radius:4px;background:#d85a30;color:#fff;font-size:11px;font-weight:700">68</span></div>
+          <div class="feat-ico"><span class="feat-badge">68</span></div>
           <h3>On the toolbar icon too</h3>
           <p>Turn on the badge and your usage sits on the extension icon as a colored number, visible from any tab, not just from Claude.</p>
         </div>
         <div class="feat">
-          <div class="feat-ico"><span style="font-size:14px;color:var(--muted)">Ctrl + Shift + U</span></div>
+          <div class="feat-ico"><span class="feat-data">Ctrl + Shift + U</span></div>
           <h3>One key to hide it</h3>
           <p>Hide and show the bar without opening anything. If the shortcut clashes with something else, rebind it in your browser's shortcut settings.</p>
         </div>
         <div class="feat">
-          <div class="feat-ico"><span style="font-size:14px;color:var(--muted)">work / personal</span></div>
+          <div class="feat-ico"><span class="feat-data">work / personal</span></div>
           <h3>More than one account</h3>
           <p>If you belong to several organizations, the extension finds the one with your real usage, and you can override the choice from Settings.</p>
         </div>
@@ -765,17 +791,17 @@ footer{ border-top:1px solid var(--line); background:var(--bg-2); padding:34px 0
       </div>
       <div class="how-grid">
         <div class="step">
-          <div class="step-n">1</div>
+          <div class="step-tag">your session cookie</div>
           <h3>It uses the session you already have</h3>
           <p>The extension calls the same endpoints claude.ai calls for its own usage screen, signed in as you by the cookie already in your browser. There is nothing to paste in.</p>
         </div>
         <div class="step">
-          <div class="step-n">2</div>
+          <div class="step-tag">chrome.alarms</div>
           <h3>It refreshes on a timer</h3>
           <p>A five minute alarm keeps the numbers current even when no Claude tab is open. When a tab is open, that tab does the fetching and the bar updates every minute while you look at it.</p>
         </div>
         <div class="step">
-          <div class="step-n">3</div>
+          <div class="step-tag">storage.local</div>
           <h3>It keeps everything on your machine</h3>
           <p>Your preferences and the last numbers it saw live in your browser's local storage. There is no account, no server on our side, and nothing to sync.</p>
         </div>
@@ -995,6 +1021,30 @@ footer{ border-top:1px solid var(--line); background:var(--bg-2); padding:34px 0
       if (canShow){ any = true; fillSeg(node, w, s.label); }
     });
     barEl.style.display = (any && S.enabled && S.design === "1") ? "" : "none";
+  }
+
+  // A second, read-only instance of the same bar for the hero. It fills in on
+  // load, so the page opens with the widget doing its job rather than a picture
+  // of it. Same builder, same fill, fixed numbers.
+  var heroEl = document.getElementById("hero-bar");
+  var HERO = { session:47, allModels:71, opus:12 };
+  heroEl.innerHTML = SEGS.map(segHtml).join("");
+
+  function paintHero(empty){
+    SEGS.forEach(function(s){
+      var node = heroEl.querySelector('[data-seg="'+s.key+'"]');
+      fillSeg(node, win(empty ? 0 : HERO[s.key], RESETS[s.key], true), s.label);
+    });
+  }
+  function heroIntro(){
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return paintHero(false);
+    paintHero(true);
+    SEGS.forEach(function(s, i){
+      var node = heroEl.querySelector('[data-seg="'+s.key+'"]');
+      setTimeout(function(){
+        fillSeg(node, win(HERO[s.key], RESETS[s.key], true), s.label);
+      }, 260 + i * 130);
+    });
   }
 
   // ------------------------------------------------------------------
@@ -1261,9 +1311,10 @@ footer{ border-top:1px solid var(--line); background:var(--bg-2); padding:34px 0
   });
 
   // Keep the reset countdowns honest while the page is open.
-  setInterval(render, 30000);
+  setInterval(function(){ render(); paintHero(false); }, 30000);
 
   render();
+  heroIntro();
 })();
 </script>
 </body>
