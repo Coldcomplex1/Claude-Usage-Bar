@@ -1,0 +1,82 @@
+/* welcome.css: the first-run setup box. options.css already carries the card,
+   the design tiles, the switch and the orange accent, so this file only adds
+   what setup needs on top: the centered box, the screenshot previews, and the
+   one big call to action. */
+
+.w-stage {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px 20px;
+}
+
+.w-box {
+  width: 100%; max-width: 560px;
+  background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 16px;
+  padding: 26px 24px 22px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* The box carries the frame, so the sections inside it drop back to plain
+   dividers rather than stacking a second set of cards on top of the first. */
+.w-box .o-card {
+  background: none; border: none; border-radius: 0;
+  padding: 18px 0 0; margin: 0;
+}
+.w-box .o-card + .o-card { border-top: 1px solid rgba(0,0,0,0.08); padding-top: 16px; margin-top: 4px; }
+
+.w-head { text-align: center; }
+.w-logo { display: block; margin: 0 auto 10px; border-radius: 9px; }
+.w-title { font-size: 19px; font-weight: 700; margin: 0; }
+.w-sub { font-size: 12.5px; opacity: 0.62; margin: 6px 0 0; line-height: 1.5; }
+
+/* Screenshots of the real thing, rather than the small CSS mockups Settings
+   uses: at install nobody has seen either design yet. */
+.w-shot {
+  display: block; width: 100%; height: auto; border-radius: 7px;
+  background: #f1f0ec; border: 1px solid rgba(0,0,0,0.07);
+}
+.w-designs { margin-top: 14px; align-items: stretch; }
+
+/* The two screenshots are not the same shape (Design 1 stacks two rows, Design 2
+   is a single toolbar), so left to themselves the cards end at different heights.
+   Stretch both to the taller one and let the names settle at the bottom, rather
+   than cropping or letterboxing either screenshot to a shared aspect ratio. */
+.w-box .o-design { display: flex; }
+.w-box .o-design-card { display: flex; flex-direction: column; width: 100%; }
+.w-box .o-design-name { margin-top: auto; padding-top: 8px; }
+
+.w-hint { margin-top: 10px; font-size: 11.5px; opacity: 0.5; }
+
+.w-foot { margin-top: 20px; text-align: center; }
+
+.w-cta {
+  display: block; width: 100%;
+  border: none; border-radius: 9px; padding: 11px 16px;
+  background: #d85a30; color: #fff;
+  font: inherit; font-weight: 600; font-size: 13px; text-align: center; text-decoration: none;
+  cursor: pointer; transition: background 0.15s, opacity 0.15s;
+}
+.w-cta:hover { background: #c44f28; }
+.w-cta:disabled { background: #cfcdc6; color: #fff; cursor: default; opacity: 0.85; }
+.w-cta:focus-visible { outline: 2px solid #d85a30; outline-offset: 2px; }
+
+.w-settings { margin-top: 12px; }
+
+.w-done { text-align: center; }
+.w-check {
+  width: 40px; height: 40px; margin: 0 auto 10px; border-radius: 50%;
+  background: rgba(216,90,48,0.12); color: #d85a30;
+  font-size: 20px; line-height: 40px; font-weight: 700;
+}
+
+@media (prefers-color-scheme: dark) {
+  .w-box { background: #2f2f2c; border-color: rgba(255,255,255,0.10); box-shadow: 0 12px 40px rgba(0,0,0,0.45); }
+  .w-box .o-card + .o-card { border-top-color: rgba(255,255,255,0.10); }
+  .w-shot { background: #232320; border-color: rgba(255,255,255,0.10); }
+  .w-cta:disabled { background: #55554f; color: #cfcdc6; }
+  .w-check { background: rgba(216,90,48,0.20); }
+}
+
+@media (max-width: 520px) {
+  .o-designs { flex-direction: column; }
+}

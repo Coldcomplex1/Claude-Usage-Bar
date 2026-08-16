@@ -1,8 +1,10 @@
-// content.js: the in-page usage readout. Two looks, chosen on the Settings
-// page and stored in cub_design:
-//   Design 1 ("1", default): a slim full-width bar under the composer.
+// content.js: the in-page usage readout. Two looks, chosen at install (or later
+// on the Settings page) and stored in cub_design:
+//   Design 1 ("1", the fallback until asked): a slim full-width bar under the composer.
 //   Design 2 ("2"): a compact widget tucked into the composer toolbar, between
 //                   the "+" button and the model picker.
+// This file also carries the first-run setup box, for anyone who closed the
+// install tab without answering; see the section above fetchAndStore().
 // Session + All models are user-toggleable; Opus shows automatically only if the
 // account has it. Colors: blue < 30%, Claude orange 30-80%, red > 80%.
 
@@ -11,6 +13,8 @@
   var LAST_KEY = "cub_last";
   var SHOW_KEY = "cub_show";
   var DESIGN_KEY = "cub_design";
+  var BADGE_KEY = "cub_badge";
+  var SETUP_KEY = "cub_setup";
 
   var TICK_MS = 30000;             // repaint the countdown; also the refetch check
   var POLL_MS = 60000;             // how stale the numbers may get before we refetch
@@ -109,7 +113,7 @@
   }
 
   function applyTheme(){
-    [barEl, inlineEl].forEach(function(el){
+    [barEl, inlineEl, setupEl].forEach(function(el){
       if (!el) return;
       el.classList.toggle("cub-theme-dark", theme === "dark");
       el.classList.toggle("cub-theme-light", theme === "light");
@@ -531,7 +535,7 @@
     var now = Date.now();
     if (!force && now < nextTryAt) return;
     var ok = design === "2" ? placeInline() : placeBar();
-    if (ok){ misses = 0; nextTryAt = 0; }
+    if (ok){ misses = 0; nextTryAt = 0; maybeShowSetup(); }
     else {
       // Nothing to attach to (a page with no composer, or a surface mid-render).
       // Ease off rather than paying for the full search 75 times a minute, but
@@ -547,6 +551,122 @@
     design = next;
     misses = 0; nextTryAt = 0;
     if (enabled){ place(true); render(); }
+  }
+
+  // ===================================================================
+  // First-run setup box. background.js opens welcome.html in a tab the moment
+  // the extension is installed; this is the second chance, for anyone who
+  // closed that tab without answering. Asking here has one thing the tab
+  // cannot do: clicking a design writes cub_design, the storage listener below
+  // calls switchDesign(), and the real widget swaps on the page behind the box.
+  //
+  // Both surfaces write cub_setup, so answering in either one settles it.
+  // ===================================================================
+  var setupEl = null;
+  var setupPending = false;      // asked for, not yet shown or answered here
+  var setupAnsweredHere = false; // ignore the cub_setup change we caused ourselves
+
+  function setupTile(v, name, desc){
+    return '<button class="cub-su-tile" type="button" data-design="' + v + '" aria-pressed="false">' +
+        '<img class="cub-su-shot" src="' + chrome.runtime.getURL("previews/design-" + v + ".png") + '" alt="" />' +
+        '<span class="cub-su-name">' + name + '</span>' +
+        '<span class="cub-su-desc">' + desc + '</span>' +
+      '</button>';
+  }
+
+  function buildSetup(){
+    var el = document.createElement("div");
+    el.id = "cub-setup"; el.className = "cub-setup";
+    el.innerHTML =
+      '<div class="cub-su-backdrop"></div>' +
+      '<div class="cub-su-box" role="dialog" aria-label="Set up Claude Usage Bar">' +
+        '<button class="cub-su-x" type="button" aria-label="Close">×</button>' +
+        '<div class="cub-su-title">Pick a design</div>' +
+        '<div class="cub-su-sub">Claude Usage Bar is installed. Choose a look — it changes on the page behind this box as you click.</div>' +
+        '<div class="cub-su-designs">' +
+          setupTile("1", "Design 1", "Full bar under the chat") +
+          setupTile("2", "Design 2", "Compact, in the toolbar") +
+        '</div>' +
+        '<div class="cub-su-badge">' +
+          '<span class="cub-su-badge-text">' +
+            '<span class="cub-su-badge-label">Show usage on the toolbar icon</span>' +
+            '<span class="cub-su-badge-sub">A colored usage number on the extension icon.</span>' +
+          '</span>' +
+          '<button class="cub-su-switch" type="button" role="switch" aria-checked="false" ' +
+            'aria-label="Show usage on the toolbar icon"></button>' +
+        '</div>' +
+        '<button class="cub-su-done" type="button" disabled>Pick a design to continue</button>' +
+        '<div class="cub-su-foot">Both can be changed later in Settings.</div>' +
+      '</div>';
+    return el;
+  }
+
+  // Answered: nothing more to ask, on this tab or any other one that has a box open.
+  function answerSetup(){
+    setupAnsweredHere = true;
+    chrome.storage.local.set({ [SETUP_KEY]: { done: true, at: Date.now() } });
+  }
+
+  function hideSetup(){
+    if (setupEl && setupEl.isConnected) setupEl.remove();
+    setupEl = null;
+  }
+
+  function endSetup(){ setupPending = false; hideSetup(); }
+
+  function markSetupPicked(v){
+    if (!setupEl) return;
+    setupEl.querySelectorAll(".cub-su-tile").forEach(function(t){
+      t.setAttribute("aria-pressed", String(t.getAttribute("data-design") === v));
+    });
+    var done = setupEl.querySelector(".cub-su-done");
+    done.disabled = false;
+    done.textContent = "Done";
+  }
+
+  function wireSetup(el){
+    el.querySelectorAll(".cub-su-tile").forEach(function(tile){
+      tile.addEventListener("click", function(){
+        var v = tile.getAttribute("data-design");
+        markSetupPicked(v);
+        chrome.storage.local.set({ [DESIGN_KEY]: v });   // switchDesign() repaints from onChanged
+        answerSetup();                                   // the design is the answer we asked for
+      });
+    });
+
+    // Reads through to the badge the same way the Settings page does, rather
+    // than assuming the stored shape: the source stays whatever it already was.
+    el.querySelector(".cub-su-switch").addEventListener("click", function(){
+      var sw = this;
+      var next = sw.getAttribute("aria-checked") !== "true";
+      sw.setAttribute("aria-checked", String(next));
+      chrome.storage.local.get([BADGE_KEY], function(o){
+        var b = Object.assign({ enabled: false, source: "session" }, o[BADGE_KEY] || {}, { enabled: next });
+        chrome.storage.local.set({ [BADGE_KEY]: b });
+      });
+    });
+
+    // Dismissing settles it too, so the box is asked once and never nags on
+    // every page load. Settings keeps both choices reachable either way.
+    el.querySelector(".cub-su-x").addEventListener("click", function(){ answerSetup(); endSetup(); });
+    el.querySelector(".cub-su-done").addEventListener("click", function(){ answerSetup(); endSetup(); });
+    el.querySelector(".cub-su-backdrop").addEventListener("click", function(){ answerSetup(); endSetup(); });
+  }
+
+  // Called from place() on a successful placement, so the box only ever appears
+  // on a surface that actually has a composer: never over the login screen, and
+  // never before there is something for the live preview to change.
+  function maybeShowSetup(){
+    if (!setupPending || setupEl || !enabled || !document.body) return;
+    setupEl = buildSetup();
+    wireSetup(setupEl);
+    applyTheme();
+    document.body.appendChild(setupEl);
+    chrome.storage.local.get([BADGE_KEY], function(o){
+      if (!setupEl) return;
+      var b = o[BADGE_KEY] || {};
+      setupEl.querySelector(".cub-su-switch").setAttribute("aria-checked", String(!!b.enabled));
+    });
   }
 
   // The fetch-and-store half of refresh(), independent of `enabled` and of the
@@ -606,7 +726,9 @@
     if (document.visibilityState === "visible") startPlacing();
     startPolling();
   }
-  function disable(){ enabled = false; stopPolling(); stopPlacing(); removeWidgets(); }
+  // The setup box only hides here: the extension being switched off is not an
+  // answer, so it comes back with the bar if it is switched on again.
+  function disable(){ enabled = false; stopPolling(); stopPlacing(); removeWidgets(); hideSetup(); }
 
   chrome.storage.onChanged.addListener(function (changes, area){
     if (area !== "local") return;
@@ -614,6 +736,13 @@
     if (changes[LAST_KEY] && changes[LAST_KEY].newValue){ lastData = changes[LAST_KEY].newValue; if (enabled) render(); }
     if (changes[SHOW_KEY] && changes[SHOW_KEY].newValue){ show = Object.assign({ session:true, allModels:true }, changes[SHOW_KEY].newValue); if (enabled) render(); }
     if (changes[DESIGN_KEY]) { switchDesign(changes[DESIGN_KEY].newValue === "2" ? "2" : "1"); }
+    // Answered somewhere else (the install tab, or another claude.ai tab): close
+    // our box. Our own answer is skipped, or picking a design would shut the box
+    // before the user got to the toolbar-icon question.
+    if (changes[SETUP_KEY] && !setupAnsweredHere){
+      var v = changes[SETUP_KEY].newValue;
+      if (v && v.done) endSetup();
+    }
   });
 
   // The background alarm prefers to have an open claude.ai tab do the fetching,
@@ -638,11 +767,14 @@
     refresh(FOCUS_MAX_AGE_MS);
   });
 
-  chrome.storage.local.get([TOGGLE_KEY, LAST_KEY, SHOW_KEY, DESIGN_KEY], function (o){
+  chrome.storage.local.get([TOGGLE_KEY, LAST_KEY, SHOW_KEY, DESIGN_KEY, SETUP_KEY], function (o){
     if (o[LAST_KEY]) lastData = o[LAST_KEY];
     if (o[SHOW_KEY]) show = Object.assign(show, o[SHOW_KEY]);
+    // Design 1 stays the fallback while setup is pending, so the bar works from
+    // the moment of install rather than waiting on an answer that may not come.
     design = o[DESIGN_KEY] === "2" ? "2" : "1";
     enabled = o[TOGGLE_KEY] !== false;
+    setupPending = !(o[SETUP_KEY] && o[SETUP_KEY].done);
     watchTheme();
     if (enabled) enable();
   });

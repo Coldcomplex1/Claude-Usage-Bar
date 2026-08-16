@@ -30,7 +30,9 @@ change over time.
 ## Repo layout
 
 - `claude-extension/` is the extension itself. This is the folder you load unpacked
-  and the folder you zip for the store.
+  and the folder you zip for the store. `welcome.html` / `.js` / `.css` inside it is
+  the setup box shown on install, and `previews/` holds the screenshot of each
+  design that box puts side by side.
 - `index.html` is the landing page, a single self-contained file with a live demo of
   the bar. `vercel.json` is the deploy config for it.
 
@@ -77,6 +79,14 @@ Works on any Chromium browser (Chrome, Edge, Brave, Arc, Opera).
 
 ## Using it
 
+Installing opens a setup box in a tab, which asks the two things the extension
+used to decide on your behalf: Design 1 or Design 2, and whether the toolbar icon
+carries your usage number. Both apply as you click them. Close that tab without
+answering and the same box appears once over claude.ai instead, where clicking a
+design swaps the real widget on the page behind it. Nothing is blocked either way —
+the bar runs on Design 1 until you say otherwise, and Settings → "Run setup again"
+brings the box back whenever you want it.
+
 - Click the toolbar icon for the popup: your usage readout, "Show in bar"
   (Session / All models), a Refresh button, and a Settings button.
 - Hover anything for the detail: a bar row, or the toolbar icon itself, shows each
@@ -87,7 +97,8 @@ Works on any Chromium browser (Chrome, Edge, Brave, Arc, Opera).
   the icon → Options):
   - Master on/off for the bar.
   - Design 1 or Design 2: the full bar under the chat, or a compact widget tucked
-    into the composer toolbar. Design 1 is the default.
+    into the composer toolbar. Set at install; Design 1 until you choose.
+    "Run setup again" reopens the install box.
   - Toolbar-icon badge: a colored usage number on the extension icon so you can
     read it at a glance. Off by default; when on, choose whether it shows your
     session (5h), weekly all-models (7d), or the higher of the two.

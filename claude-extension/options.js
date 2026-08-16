@@ -5,6 +5,7 @@ var LAST_KEY = "cub_last";
 var BADGE_KEY = "cub_badge";
 var MANUAL_KEY = "cub_org_manual";
 var DESIGN_KEY = "cub_design";
+var SETUP_KEY = "cub_setup";
 var DEFAULT_BADGE = { enabled: false, source: "session" };
 
 // ---- Master on/off -------------------------------------------------------
@@ -146,7 +147,13 @@ document.addEventListener("DOMContentLoaded", function(){
 
   document.querySelectorAll('input[name="design"]').forEach(function(r){
     r.addEventListener("change", function(){
-      if (r.checked) chrome.storage.local.set({ [DESIGN_KEY]: r.value });
+      if (!r.checked) return;
+      // Picking here answers the first-run question too, so someone who found
+      // Settings on their own is not asked again in the page afterwards.
+      chrome.storage.local.set({
+        [DESIGN_KEY]: r.value,
+        [SETUP_KEY]: { done: true, at: Date.now() }
+      });
     });
   });
 
@@ -156,6 +163,12 @@ document.addEventListener("DOMContentLoaded", function(){
   });
   document.querySelectorAll('input[name="badge-source"]').forEach(function(r){
     r.addEventListener("change", function(){ if (r.checked) saveBadge({ source: r.value }); });
+  });
+
+  // The install-time setup box, on demand. It reads the stored choices back, so
+  // re-running it starts from what is set now rather than from blank.
+  document.getElementById("setup").addEventListener("click", function(){
+    chrome.tabs.create({ url: chrome.runtime.getURL("welcome.html") });
   });
 
   document.getElementById("switch").addEventListener("click", showScan);

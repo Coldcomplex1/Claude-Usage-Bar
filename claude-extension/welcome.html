@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Set up Claude Usage Bar</title>
+    <!-- options.css first: the card, the design tiles, the switch and the accent
+         are already defined there, and setup should look like Settings. -->
+    <link rel="stylesheet" href="options.css" />
+    <link rel="stylesheet" href="welcome.css" />
+  </head>
+  <body>
+    <div class="w-stage">
+      <div class="w-box" id="setup">
+        <div class="w-head">
+          <img class="w-logo" src="icons/icon48.png" alt="" width="40" height="40" />
+          <h1 class="w-title">Claude Usage Bar is installed</h1>
+          <p class="w-sub">Two quick choices and you're done. Both can be changed later in Settings.</p>
+        </div>
+
+        <section class="o-card">
+          <div class="o-row-label">Pick a design</div>
+          <div class="o-row-sub">How your usage shows on claude.ai.</div>
+          <div class="o-designs w-designs">
+            <label class="o-design">
+              <input type="radio" name="design" value="1" />
+              <div class="o-design-card">
+                <img class="w-shot" src="previews/design-1.png" alt="A full-width bar under the chat with a Session row and an All models row" />
+                <div class="o-design-name">Design 1</div>
+                <div class="o-design-desc">Full bar under the chat</div>
+              </div>
+            </label>
+            <label class="o-design">
+              <input type="radio" name="design" value="2" />
+              <div class="o-design-card">
+                <img class="w-shot" src="previews/design-2.png" alt="A compact percentage and ring tucked into the composer toolbar" />
+                <div class="o-design-name">Design 2</div>
+                <div class="o-design-desc">Compact, in the toolbar</div>
+              </div>
+            </label>
+          </div>
+        </section>
+
+        <section class="o-card">
+          <div class="o-row">
+            <div class="o-row-text">
+              <div class="o-row-label">Show usage on the toolbar icon</div>
+              <div class="o-row-sub">Read it at a glance, without opening anything.</div>
+            </div>
+            <label class="p-switch" title="Show usage on the toolbar icon">
+              <input type="checkbox" id="badge-enabled" />
+              <span class="p-slider"></span>
+            </label>
+          </div>
+          <div class="o-row-sub w-hint">Starts with your 5-hour session. Settings can switch it to the weekly window, or the higher of the two.</div>
+        </section>
+
+        <div class="w-foot">
+          <button id="done" class="w-cta" disabled>Pick a design to continue</button>
+        </div>
+      </div>
+
+      <div class="w-box w-done" id="finished" hidden>
+        <div class="w-head">
+          <div class="w-check" aria-hidden="true">✓</div>
+          <h1 class="w-title">You're all set</h1>
+          <p class="w-sub" id="finished-sub">Open claude.ai and your usage will be there.</p>
+        </div>
+        <div class="w-foot">
+          <a class="w-cta" href="https://claude.ai/" id="go">Open claude.ai</a>
+          <button id="settings" class="p-link w-settings">Open Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="welcome.js"></script>
+  </body>
+</html>
