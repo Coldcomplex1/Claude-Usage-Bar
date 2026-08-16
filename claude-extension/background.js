@@ -19,6 +19,7 @@ importScripts("usage.js");   // classic service worker, so this gives us CUB.get
 var TOGGLE_KEY = "cub_enabled";
 var LAST_KEY = "cub_last";
 var BADGE_KEY = "cub_badge";
+var SETUP_KEY = "cub_setup";     // first-run chooser: { done, at } once answered
 var HEALTH_KEY = "cub_health";   // refresh bookkeeping/backoff; nothing renders it
 var DEFAULT_BADGE = { enabled: false, source: "session" };
 
@@ -212,7 +213,27 @@ async function doRefresh(reason){
 
 chrome.alarms.onAlarm.addListener(function (a){ if (a.name === ALARM) doRefresh("alarm"); });
 
-chrome.runtime.onInstalled.addListener(function (){ refreshBadge(); ensureAlarm(); doRefresh("install"); });
+// ---- First run ------------------------------------------------------------
+
+// A fresh install used to land on Design 1 with the badge off, silently, and
+// most people never open Settings to discover either was a choice. So ask, in a
+// tab, the moment the extension is installed.
+//
+// Guarded twice over: "install" excludes the update and browser-update reasons
+// this same listener fires for, and cub_setup excludes a reinstall on top of a
+// profile that already answered.
+function openSetupIfNeeded(details){
+  if (!details || details.reason !== "install") return;
+  chrome.storage.local.get([SETUP_KEY], function (o){
+    if (o[SETUP_KEY] && o[SETUP_KEY].done) return;
+    chrome.tabs.create({ url: chrome.runtime.getURL("welcome.html") });
+  });
+}
+
+chrome.runtime.onInstalled.addListener(function (details){
+  refreshBadge(); ensureAlarm(); doRefresh("install");
+  openSetupIfNeeded(details);
+});
 chrome.runtime.onStartup.addListener(function (){ refreshBadge(); ensureAlarm(); doRefresh("startup"); });
 
 // And whenever the service worker first spins up with data already in storage.

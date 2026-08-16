@@ -9,7 +9,7 @@
    alone painted a light bar on a dark page for anyone whose claude.ai theme
    and OS theme disagree. */
 
-#cub-bar.cub-bar, #cub-inline.cub-inline {
+#cub-bar.cub-bar, #cub-inline.cub-inline, #cub-setup.cub-setup {
   --cub-fg: #3d3d3a;
   --cub-bg: rgba(255, 255, 255, 0.72);
   --cub-border: rgba(0, 0, 0, 0.08);
@@ -18,19 +18,28 @@
   --cub-low: #378add;
   --cub-mid: #d85a30;
   --cub-high: #e2564d;
+  /* The setup box needs an opaque surface (the bar's translucent --cub-bg is
+     meant to sit on the composer, not to hold a dialog's worth of text). */
+  --cub-surface: #ffffff;
+  --cub-dim: rgba(0, 0, 0, 0.34);
 }
-#cub-bar.cub-bar.cub-theme-dark, #cub-inline.cub-inline.cub-theme-dark {
+#cub-bar.cub-bar.cub-theme-dark, #cub-inline.cub-inline.cub-theme-dark, #cub-setup.cub-setup.cub-theme-dark {
   --cub-fg: #e7e7e3;
   --cub-bg: rgba(45, 45, 43, 0.7);
   --cub-border: rgba(255, 255, 255, 0.12);
   --cub-track: rgba(255, 255, 255, 0.14);
+  --cub-surface: #2f2f2c;
+  --cub-dim: rgba(0, 0, 0, 0.52);
 }
 @media (prefers-color-scheme: dark) {
-  #cub-bar.cub-bar:not(.cub-theme-light), #cub-inline.cub-inline:not(.cub-theme-light) {
+  #cub-bar.cub-bar:not(.cub-theme-light), #cub-inline.cub-inline:not(.cub-theme-light),
+  #cub-setup.cub-setup:not(.cub-theme-light) {
     --cub-fg: #e7e7e3;
     --cub-bg: rgba(45, 45, 43, 0.7);
     --cub-border: rgba(255, 255, 255, 0.12);
     --cub-track: rgba(255, 255, 255, 0.14);
+    --cub-surface: #2f2f2c;
+    --cub-dim: rgba(0, 0, 0, 0.52);
   }
 }
 
@@ -120,6 +129,97 @@
 #cub-bar.cub-stale .cub-fill, #cub-inline.cub-stale .cub-i-fill,
 #cub-inline.cub-stale .cub-i-ring-fill { opacity: 0.5; }
 
+/* First-run setup box: the same two questions as welcome.html, asked in the page
+   for anyone who closed the install tab without answering. Anchored to the top
+   of the viewport and dimmed only lightly, because the point of asking here is
+   that the composer stays visible: clicking a design swaps the real widget
+   underneath while the box is still open.
+
+   Every rule is scoped under #cub-setup and every inherited property is set
+   explicitly, for the same reason Design 2 is: claude.ai's own styles must not
+   leak in, and ours must not leak out. */
+#cub-setup.cub-setup {
+  position: fixed; inset: 0; z-index: 2147483000;
+  font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+  font-size: 13px; line-height: 1.4; color: var(--cub-fg);
+  display: flex; justify-content: center; align-items: flex-start;
+  padding: 6vh 16px 16px;
+  pointer-events: none;   /* only the box itself is interactive; see below */
+}
+#cub-setup .cub-su-backdrop {
+  position: fixed; inset: 0; background: var(--cub-dim); pointer-events: auto;
+}
+#cub-setup .cub-su-box {
+  position: relative; pointer-events: auto;
+  box-sizing: border-box; width: 100%; max-width: 460px; max-height: 88vh; overflow-y: auto;
+  padding: 20px 20px 18px; text-align: left;
+  background: var(--cub-surface); border: 1px solid var(--cub-border); border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.28);
+}
+
+#cub-setup button { font: inherit; color: inherit; margin: 0; cursor: pointer; }
+
+#cub-setup .cub-su-x {
+  position: absolute; top: 8px; right: 8px;
+  width: 26px; height: 26px; padding: 0; border: 0; border-radius: 7px;
+  background: none; font-size: 17px; line-height: 1; opacity: 0.45;
+}
+#cub-setup .cub-su-x:hover { opacity: 0.85; background: var(--cub-track); }
+
+#cub-setup .cub-su-title { font-size: 15px; font-weight: 700; padding-right: 24px; }
+#cub-setup .cub-su-sub { font-size: 12px; opacity: 0.62; margin-top: 4px; }
+
+#cub-setup .cub-su-designs { display: flex; align-items: stretch; gap: 10px; margin-top: 14px; }
+/* Column layout with the name pushed down: the two screenshots are not the same
+   shape, so this is what keeps the labels on one line across both tiles. */
+#cub-setup .cub-su-tile {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; text-align: left;
+  padding: 8px; border: 1.5px solid var(--cub-border); border-radius: 10px;
+  background: none; transition: border-color 0.15s, background 0.15s;
+}
+#cub-setup .cub-su-tile:hover { border-color: var(--cub-mid); }
+#cub-setup .cub-su-tile[aria-pressed="true"] { border-color: var(--cub-mid); background: rgba(216,90,48,0.10); }
+#cub-setup .cub-su-shot {
+  display: block; width: 100%; height: auto; border-radius: 6px;
+  border: 1px solid var(--cub-border); background: var(--cub-track);
+}
+#cub-setup .cub-su-name { display: block; font-size: 12px; font-weight: 600; margin-top: auto; padding-top: 7px; }
+#cub-setup .cub-su-desc { display: block; font-size: 11px; opacity: 0.6; margin-top: 1px; }
+
+/* Toggle built out of a button rather than a checkbox, so the page cannot
+   restyle it and we do not have to fight an input's user-agent appearance. */
+#cub-setup .cub-su-badge {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--cub-border);
+}
+#cub-setup .cub-su-badge-label { display: block; font-size: 12.5px; font-weight: 600; }
+#cub-setup .cub-su-badge-sub { display: block; font-size: 11px; opacity: 0.6; margin-top: 2px; }
+#cub-setup .cub-su-switch {
+  position: relative; flex: none; width: 38px; height: 22px; padding: 0;
+  border: 0; border-radius: 999px; background: var(--cub-track); transition: background 0.2s;
+}
+#cub-setup .cub-su-switch::before {
+  content: ""; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px;
+  border-radius: 50%; background: #fff; transition: transform 0.2s;
+}
+#cub-setup .cub-su-switch[aria-checked="true"] { background: var(--cub-mid); }
+#cub-setup .cub-su-switch[aria-checked="true"]::before { transform: translateX(16px); }
+
+#cub-setup .cub-su-done {
+  display: block; width: 100%; margin-top: 16px; padding: 10px 14px;
+  border: 0; border-radius: 9px; background: var(--cub-mid); color: #fff;
+  font-size: 13px; font-weight: 600; text-align: center; transition: opacity 0.15s;
+}
+#cub-setup .cub-su-done:hover { opacity: 0.9; }
+#cub-setup .cub-su-done:disabled { background: var(--cub-track); color: var(--cub-fg); opacity: 0.55; cursor: default; }
+
+#cub-setup .cub-su-foot { font-size: 11px; opacity: 0.5; margin-top: 10px; text-align: center; }
+
+@media (max-width: 420px) {
+  #cub-setup .cub-su-designs { flex-direction: column; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   #cub-bar .cub-fill, #cub-inline .cub-i-fill, #cub-inline .cub-i-ring-fill { transition: none; }
+  #cub-setup .cub-su-switch, #cub-setup .cub-su-switch::before { transition: none; }
 }
