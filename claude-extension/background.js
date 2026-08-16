@@ -63,10 +63,30 @@ function renderBadge(enabled, badge, data){
   if (chrome.action.setBadgeTextColor) chrome.action.setBadgeTextColor({ color: "#ffffff" });
 }
 
+// The icon's hover text carries the full readout, so the whole thing can be read
+// without opening anything. The badge only has room for one number; this has room
+// for all three windows, their countdowns, and how old the reading is.
+function titleFor(data){
+  var base = "Claude Usage Bar";
+  if (!data) return base;
+  var lines = [];
+  [["Session (5h)", data.session], ["All models (7d)", data.allModels], ["Opus (7d)", data.opus]]
+    .forEach(function (pair){
+      var pct = winPct(pair[1]);
+      if (pct == null) return;
+      var left = pct > 0 ? CUB.fmtReset(pair[1].resetAt) : "";
+      lines.push(pair[0] + ": " + pct + "%" + (left ? " · resets in " + left : ""));
+    });
+  if (!lines.length) return base;
+  if (data.fetchedAt) lines.push("Updated " + CUB.fmtAgo(data.fetchedAt));
+  return base + "\n" + lines.join("\n");
+}
+
 function refreshBadge(){
   chrome.storage.local.get([TOGGLE_KEY, LAST_KEY, BADGE_KEY], function (o){
     var badge = Object.assign({}, DEFAULT_BADGE, o[BADGE_KEY] || {});
     renderBadge(o[TOGGLE_KEY] !== false, badge, o[LAST_KEY]);
+    chrome.action.setTitle({ title: titleFor(o[LAST_KEY]) });
   });
 }
 

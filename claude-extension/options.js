@@ -54,8 +54,19 @@ function updateAutoVisibility(){
   });
 }
 
-async function refreshAccount(){
+// Opening Settings does not need a request of its own: the account name lives in
+// the numbers a tab or the alarm already fetched. We only go to the network when
+// that cache is old, or when the user just changed which account we read.
+async function refreshAccount(force){
   updateAutoVisibility();
+  if (!force){
+    var st = await new Promise(function(r){ chrome.storage.local.get([LAST_KEY], r); });
+    var last = st[LAST_KEY];
+    if (last && last.orgName && last.fetchedAt && Date.now() - last.fetchedAt < 60000){
+      setAcct(last.orgName);
+      return;
+    }
+  }
   try {
     var data = await CUB.getUsage();
     chrome.storage.local.set({ [LAST_KEY]: data });
@@ -65,28 +76,46 @@ async function refreshAccount(){
 
 function pctText(b){ return b && b.utilization!=null ? Math.round(Number(b.utilization))+"%" : "–"; }
 
+function el(tag, cls, text){
+  var n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;   // never innerHTML: see below
+  return n;
+}
+
+function note(box, text){
+  box.textContent = "";
+  box.appendChild(el("div", "p-empty", text));
+}
+
+// Account names come back from the API, so they are built as text nodes rather
+// than concatenated into innerHTML: this page holds the chrome.* APIs, and an
+// org named with markup would otherwise run here.
 async function showScan(){
   var box = document.getElementById("scan");
   box.hidden = false;
-  box.innerHTML = '<div class="p-empty">Scanning accounts…</div>';
+  note(box, "Scanning accounts…");
   try {
     var res = await CUB.scanOrgs();
-    var html = '<div class="p-scan-hint">Pick the account with your real usage:</div>';
+    box.textContent = "";
+    box.appendChild(el("div", "p-scan-hint", "Pick the account with your real usage:"));
     res.rows.forEach(function(r){
-      var detail = r.ok ? ("5h "+pctText(r.raw.five_hour)+" · 7d "+pctText(r.raw.seven_day)) : ("error: "+(r.error||"?"));
-      html += '<div class="p-org"><div class="p-org-info"><div class="p-org-name">'+r.name+'</div>'+
-        '<div class="p-org-detail">'+detail+'</div></div>'+
-        '<button class="p-btn p-use" data-id="'+r.uuid+'">Use</button></div>';
-    });
-    box.innerHTML = html;
-    box.querySelectorAll(".p-use").forEach(function(btn){
+      var row = el("div", "p-org");
+      var info = el("div", "p-org-info");
+      info.appendChild(el("div", "p-org-name", r.name));
+      info.appendChild(el("div", "p-org-detail", r.ok
+        ? "5h " + pctText(r.raw.five_hour) + " · 7d " + pctText(r.raw.seven_day)
+        : "error: " + (r.error || "?")));
+      var btn = el("button", "p-btn p-use", "Use");
       btn.addEventListener("click", async function(){
-        await CUB.setManualOrg(btn.getAttribute("data-id"));
-        box.hidden = true; refreshAccount();
+        await CUB.setManualOrg(r.uuid);
+        box.hidden = true; refreshAccount(true);   // different account: must re-read
       });
+      row.appendChild(info); row.appendChild(btn);
+      box.appendChild(row);
     });
   } catch (e){
-    box.innerHTML = '<div class="p-empty">'+(e.code==="AUTH"?"Log in to claude.ai first":"Couldn't list accounts")+'</div>';
+    note(box, e.code === "AUTH" ? "Log in to claude.ai first" : "Couldn't list accounts");
   }
 }
 
@@ -133,7 +162,7 @@ document.addEventListener("DOMContentLoaded", function(){
   document.getElementById("auto").addEventListener("click", async function(){
     await CUB.clearOrg();
     document.getElementById("scan").hidden = true;
-    refreshAccount();
+    refreshAccount(true);
   });
 
   document.getElementById("hk-edit").addEventListener("click", function(e){

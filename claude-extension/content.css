@@ -1,12 +1,45 @@
 /* content.css: slim usage bar. Each metric is a 4-column grid so the bar,
-   the % and the reset time line up in their own columns across every row. */
+   the % and the reset time line up in their own columns across every row.
+
+   Colors come from tokens set on the widget root, so light/dark is one small
+   block per look instead of a duplicate of every rule. content.js reads
+   claude.ai's own theme and sets cub-theme-dark / cub-theme-light; the
+   prefers-color-scheme block is the fallback for when the page tells us
+   nothing (which includes claude.ai's own "system" setting). Keying off the OS
+   alone painted a light bar on a dark page for anyone whose claude.ai theme
+   and OS theme disagree. */
+
+#cub-bar.cub-bar, #cub-inline.cub-inline {
+  --cub-fg: #3d3d3a;
+  --cub-bg: rgba(255, 255, 255, 0.72);
+  --cub-border: rgba(0, 0, 0, 0.08);
+  --cub-track: rgba(0, 0, 0, 0.09);
+  --cub-empty: #b9b8b1;
+  --cub-low: #378add;
+  --cub-mid: #d85a30;
+  --cub-high: #e2564d;
+}
+#cub-bar.cub-bar.cub-theme-dark, #cub-inline.cub-inline.cub-theme-dark {
+  --cub-fg: #e7e7e3;
+  --cub-bg: rgba(45, 45, 43, 0.7);
+  --cub-border: rgba(255, 255, 255, 0.12);
+  --cub-track: rgba(255, 255, 255, 0.14);
+}
+@media (prefers-color-scheme: dark) {
+  #cub-bar.cub-bar:not(.cub-theme-light), #cub-inline.cub-inline:not(.cub-theme-light) {
+    --cub-fg: #e7e7e3;
+    --cub-bg: rgba(45, 45, 43, 0.7);
+    --cub-border: rgba(255, 255, 255, 0.12);
+    --cub-track: rgba(255, 255, 255, 0.14);
+  }
+}
 
 #cub-bar.cub-bar {
   box-sizing: border-box; width: 100%; margin: 14px auto 0; padding: 9px 14px;
   display: flex; flex-direction: column; gap: 8px;
   font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
-  font-size: 12px; line-height: 1.2; color: #3d3d3a;
-  background: rgba(255, 255, 255, 0.72); border: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 12px; line-height: 1.2; color: var(--cub-fg);
+  background: var(--cub-bg); border: 1px solid var(--cub-border);
   border-radius: 12px; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   position: relative; z-index: 5;
 }
@@ -29,23 +62,18 @@
 
 #cub-bar .cub-track {
   display: block; height: 5px; border-radius: 999px;
-  background: rgba(0, 0, 0, 0.09); overflow: hidden;
+  background: var(--cub-track); overflow: hidden;
 }
 #cub-bar .cub-fill {
   display: block; height: 100%; width: 0; border-radius: 999px;
-  background: #b9b8b1; transition: width 0.4s ease, background 0.3s ease;
+  background: var(--cub-empty); transition: width 0.4s ease, background 0.3s ease;
 }
-#cub-bar .cub-fill.cub-low  { background: #378add; }
-#cub-bar .cub-fill.cub-mid  { background: #d85a30; }
-#cub-bar .cub-fill.cub-high { background: #e2564d; }
+#cub-bar .cub-fill.cub-low  { background: var(--cub-low); }
+#cub-bar .cub-fill.cub-mid  { background: var(--cub-mid); }
+#cub-bar .cub-fill.cub-high { background: var(--cub-high); }
 
 #cub-bar .cub-val { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
 #cub-bar .cub-reset { text-align: left; font-size: 10px; opacity: 0.55; white-space: nowrap; overflow: hidden; }
-
-@media (prefers-color-scheme: dark) {
-  #cub-bar.cub-bar { color: #e7e7e3; background: rgba(45,45,43,0.7); border-color: rgba(255,255,255,0.12); }
-  #cub-bar .cub-track { background: rgba(255,255,255,0.13); }
-}
 
 /* Design 2: compact inline widget that sits in the composer toolbar, between the
    "+" button and the model picker. Scoped and given explicit font/color so
@@ -55,7 +83,7 @@
   display: inline-flex; align-items: center; gap: 14px; flex: 0 0 auto;
   align-self: center; margin: 0 10px; vertical-align: middle;
   font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
-  font-size: 12px; line-height: 1; color: #3d3d3a;
+  font-size: 12px; line-height: 1; color: var(--cub-fg);
 }
 #cub-inline .cub-i-seg { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
 #cub-inline .cub-i-seg[hidden] { display: none; }
@@ -63,30 +91,35 @@
 
 #cub-inline .cub-i-bar {
   display: inline-block; width: 80px; height: 5px; border-radius: 999px;
-  background: rgba(0, 0, 0, 0.12); overflow: hidden;
+  background: var(--cub-track); overflow: hidden;
 }
 #cub-inline .cub-i-fill {
   display: block; height: 100%; width: 0; border-radius: 999px;
-  background: #b9b8b1; transition: width 0.4s ease, background 0.3s ease;
+  background: var(--cub-empty); transition: width 0.4s ease, background 0.3s ease;
 }
-#cub-inline .cub-i-fill.cub-low  { background: #378add; }
-#cub-inline .cub-i-fill.cub-mid  { background: #d85a30; }
-#cub-inline .cub-i-fill.cub-high { background: #e2564d; }
+#cub-inline .cub-i-fill.cub-low  { background: var(--cub-low); }
+#cub-inline .cub-i-fill.cub-mid  { background: var(--cub-mid); }
+#cub-inline .cub-i-fill.cub-high { background: var(--cub-high); }
 
 #cub-inline .cub-i-ring { display: inline-flex; }
 #cub-inline .cub-i-ring svg { display: block; transform: rotate(-90deg); }
-#cub-inline .cub-i-ring-bg { fill: none; stroke: rgba(0, 0, 0, 0.12); stroke-width: 2.5; }
+#cub-inline .cub-i-ring-bg { fill: none; stroke: var(--cub-track); stroke-width: 2.5; }
 #cub-inline .cub-i-ring-fill {
-  fill: none; stroke: #b9b8b1; stroke-width: 2.5; stroke-linecap: round;
+  fill: none; stroke: var(--cub-empty); stroke-width: 2.5; stroke-linecap: round;
   stroke-dasharray: 50.265; stroke-dashoffset: 50.265; /* empty until filled by JS */
   transition: stroke-dashoffset 0.4s ease, stroke 0.3s ease;
 }
-#cub-inline .cub-i-ring-fill.cub-low  { stroke: #378add; }
-#cub-inline .cub-i-ring-fill.cub-mid  { stroke: #d85a30; }
-#cub-inline .cub-i-ring-fill.cub-high { stroke: #e2564d; }
+#cub-inline .cub-i-ring-fill.cub-low  { stroke: var(--cub-low); }
+#cub-inline .cub-i-ring-fill.cub-mid  { stroke: var(--cub-mid); }
+#cub-inline .cub-i-ring-fill.cub-high { stroke: var(--cub-high); }
 
-@media (prefers-color-scheme: dark) {
-  #cub-inline.cub-inline { color: #e7e7e3; }
-  #cub-inline .cub-i-bar { background: rgba(255, 255, 255, 0.16); }
-  #cub-inline .cub-i-ring-bg { stroke: rgba(255, 255, 255, 0.16); }
+/* Numbers we could not refresh: still shown (they are the best we have) but
+   faded, with the tooltip saying how old they are. */
+#cub-bar.cub-stale .cub-val, #cub-bar.cub-stale .cub-reset,
+#cub-inline.cub-stale .cub-i-val { opacity: 0.45; }
+#cub-bar.cub-stale .cub-fill, #cub-inline.cub-stale .cub-i-fill,
+#cub-inline.cub-stale .cub-i-ring-fill { opacity: 0.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  #cub-bar .cub-fill, #cub-inline .cub-i-fill, #cub-inline .cub-i-ring-fill { transition: none; }
 }

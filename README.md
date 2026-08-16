@@ -46,7 +46,17 @@ already in your browser:
 The numbers refresh every five minutes in the background, so the toolbar badge and
 the popup are current even when no claude.ai tab is open. When a claude.ai tab is
 open the extension asks that tab to do the fetch; otherwise it calls the endpoint
-itself. An open, visible tab also refreshes its own bar every minute.
+itself. An open, visible tab keeps its own bar no more than a minute old.
+
+Every surface shares one answer rather than fetching its own. A tab, the popup and
+the Settings page all check how old the stored numbers are first and only go to the
+network when they have actually gone off, so ten open claude.ai tabs still cost one
+request a minute between them, and opening the popup on fresh numbers costs none.
+The countdowns tick down locally in between.
+
+The bar follows claude.ai's own light/dark setting, read from the page, rather than
+the operating system's, so it stays legible if you set one of them to override the
+other.
 
 Everything stays on your machine (`chrome.storage.local`). Nothing is sent to any
 third-party server.
@@ -69,6 +79,10 @@ Works on any Chromium browser (Chrome, Edge, Brave, Arc, Opera).
 
 - Click the toolbar icon for the popup: your usage readout, "Show in bar"
   (Session / All models), a Refresh button, and a Settings button.
+- Hover anything for the detail: a bar row, or the toolbar icon itself, shows each
+  window's percentage, the countdown, the clock time it resets at, and how old the
+  reading is. Numbers that could not be refreshed stay on screen but fade, so a
+  stale reading never passes for a fresh one.
 - Everything else lives on the Settings page (the Settings button, or right-click
   the icon → Options):
   - Master on/off for the bar.

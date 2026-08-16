@@ -11,10 +11,14 @@
   var LAST_KEY = "cub_last";
   var SHOW_KEY = "cub_show";
   var DESIGN_KEY = "cub_design";
-  var POLL_MS = 60000;
-  var PLACE_MS = 800;
 
-  var enabled = true, lastData = null, pollTimer = null, placeTimer = null;
+  var TICK_MS = 30000;             // repaint the countdown; also the refetch check
+  var POLL_MS = 60000;             // how stale the numbers may get before we refetch
+  var FOCUS_MAX_AGE_MS = 30000;    // ... when a tab comes back to the foreground
+  var PLACE_MS = 800;              // placement heartbeat (cheap unless misplaced)
+  var STALE_MS = 8 * 60 * 1000;    // past this the readout is dimmed as out of date
+
+  var enabled = true, lastData = null, tickTimer = null, placeTimer = null;
   var inFlight = null;   // in-progress fetch, so the poll and the background alarm share one
   var show = { session: true, allModels: true };
   var design = "1";
@@ -27,20 +31,111 @@
   ];
 
   function colorClass(p){ return p > 80 ? "cub-high" : p >= 30 ? "cub-mid" : "cub-low"; }
+  function pctOf(d){ return Math.max(0, Math.min(100, Math.round(d.pct))); }
+  function hasData(d){ return !!(d && d.available && d.pct != null); }
 
-  // Find the composer input: the bottom-most visible, non-tiny editor on the page
-  // (the composer always sits at the bottom). Shared by both designs.
-  function findEditor(){
-    var nodes = document.querySelectorAll('div[contenteditable="true"], p[contenteditable="true"], textarea');
-    var editor = null, bestBottom = -Infinity;
-    for (var i=0; i<nodes.length; i++){
-      var n = nodes[i];
-      if (!n.offsetParent && n.getClientRects().length === 0) continue; // hidden
-      var r = n.getBoundingClientRect();
-      if (r.width < 120 || r.height === 0) continue;                    // tiny/collapsed
-      if (r.bottom > bestBottom){ bestBottom = r.bottom; editor = n; }
+  // Hover text: the number, the countdown, the wall-clock time it lands on, what
+  // the window means, and how old the reading is. Cheap enough to rebuild on
+  // every paint, and it saves a trip to the popup.
+  function tipFor(s, d){
+    var t = s.label + " (" + s.sub + "): ";
+    if (!hasData(d)) t += "no data yet";
+    else {
+      var pct = pctOf(d), left = pct > 0 ? CUB.fmtReset(d.resetAt) : "";
+      t += pct + "% used";
+      if (left) t += ", resets in " + left + (CUB.fmtResetAt(d.resetAt) ? " (" + CUB.fmtResetAt(d.resetAt) + ")" : "");
     }
-    return editor;
+    t += "\n" + s.tip;
+    if (lastData && lastData.fetchedAt) t += "\nUpdated " + CUB.fmtAgo(lastData.fetchedAt);
+    return t;
+  }
+
+  function ariaFor(s, d){
+    if (!hasData(d)) return s.label + ": no data";
+    var pct = pctOf(d), left = pct > 0 ? CUB.fmtReset(d.resetAt) : "";
+    return s.label + ": " + pct + "% used" + (left ? ", resets in " + left : "");
+  }
+
+  // ARIA progress state, so a screen reader reads a meter rather than loose text.
+  function setProgress(node, d, s){
+    if (!hasData(d)){ node.removeAttribute("aria-valuenow"); }
+    else node.setAttribute("aria-valuenow", String(pctOf(d)));
+    node.setAttribute("aria-valuetext", ariaFor(s, d));
+    node.setAttribute("aria-label", ariaFor(s, d));
+    node.setAttribute("title", tipFor(s, d));
+  }
+
+  // Dimmed as out of date once the numbers are genuinely old, or sooner if the
+  // last fetch failed outright: a single miss on a minute-old reading is not
+  // worth flagging, a miss on top of a five-minute-old one is.
+  var fetchFailed = false;
+  function isStale(){
+    if (!lastData || !lastData.fetchedAt) return false;
+    var age = Date.now() - lastData.fetchedAt;
+    return age > STALE_MS || (fetchFailed && age > 2 * 60 * 1000);
+  }
+
+  // ===================================================================
+  // Theme. claude.ai has its own light/dark setting, which does not have to
+  // match the OS, so keying our colors off prefers-color-scheme alone painted a
+  // light bar on a dark page (and the reverse) for anyone who overrides it.
+  // Read the page's own theme, and fall back to the media query only when the
+  // page tells us nothing (which includes claude.ai's own "system" setting).
+  // ===================================================================
+  var theme = "";   // "dark" | "light" | "" (unknown -> CSS follows the OS)
+
+  function themeFromHints(){
+    var el = document.documentElement;
+    var attr = (el.getAttribute("data-theme") || el.getAttribute("data-mode") ||
+                el.getAttribute("data-color-scheme") || el.style.colorScheme || "").toLowerCase();
+    if (attr.indexOf("dark") !== -1 && attr.indexOf("light") === -1) return "dark";
+    if (attr.indexOf("light") !== -1 && attr.indexOf("dark") === -1) return "light";
+    var cls = " " + (el.className || "") + " " + ((document.body && document.body.className) || "") + " ";
+    if (/\sdark\s/.test(cls)) return "dark";
+    if (/\slight\s/.test(cls)) return "light";
+    return "";
+  }
+
+  // Last resort: the page's actual painted background. Works whatever mechanism
+  // the site uses, at the cost of one style read (so: only on theme changes).
+  function themeFromPaint(){
+    var target = document.body || document.documentElement;
+    if (!target) return "";
+    var m = /rgba?\(([^)]+)\)/.exec(getComputedStyle(target).backgroundColor || "");
+    if (!m) return "";
+    var p = m[1].split(",").map(Number);
+    if (p.length < 3 || (p.length > 3 && p[3] < 0.5)) return "";   // transparent: tells us nothing
+    return (0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]) < 128 ? "dark" : "light";
+  }
+
+  function applyTheme(){
+    [barEl, inlineEl].forEach(function(el){
+      if (!el) return;
+      el.classList.toggle("cub-theme-dark", theme === "dark");
+      el.classList.toggle("cub-theme-light", theme === "light");
+    });
+  }
+
+  function detectTheme(){
+    var next = themeFromHints() || themeFromPaint();
+    if (next === theme) return;
+    theme = next;
+    applyTheme();
+  }
+
+  function watchTheme(){
+    var pending = false;
+    var recheck = function(){
+      if (pending) return;
+      pending = true;
+      setTimeout(function(){ pending = false; detectTheme(); }, 250);
+    };
+    new MutationObserver(recheck).observe(document.documentElement, {
+      attributes: true, attributeFilter: ["class", "style", "data-theme", "data-mode", "data-color-scheme"]
+    });
+    if (document.body) new MutationObserver(recheck).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", recheck); } catch (e) {}
+    detectTheme();
   }
 
   // ===================================================================
@@ -50,7 +145,7 @@
   var barObserver = null, barObservedParent = null, barObservedComposer = null, barReinserts = [];
 
   function segHtml(s){
-    return '<div class="cub-seg" role="img" data-seg="'+s.key+'" title="'+s.tip+'">'+
+    return '<div class="cub-seg" role="progressbar" aria-valuemin="0" aria-valuemax="100" data-seg="'+s.key+'">'+
       '<span class="cub-label"><span class="cub-name">'+s.label+'</span> <span class="cub-sub">'+s.sub+'</span></span>'+
       '<span class="cub-track"><span class="cub-fill"></span></span>'+
       '<span class="cub-val">–</span>'+
@@ -65,22 +160,21 @@
     return bar;
   }
 
-  function fillSeg(node, d, label){
+  function fillSeg(node, d, s){
     var val = node.querySelector(".cub-val");
     var fill = node.querySelector(".cub-fill");
     var reset = node.querySelector(".cub-reset");
-    if (!d || !d.available || d.pct == null){
+    if (!hasData(d)){
       val.textContent = "–"; fill.style.width = "0%"; fill.className = "cub-fill"; reset.textContent = "";
-      node.setAttribute("aria-label", label + ": no data");
+      setProgress(node, d, s);
       return;
     }
-    var pct = Math.max(0, Math.min(100, Math.round(d.pct)));
-    var r = pct > 0 ? CUB.fmtReset(d.resetAt) : "";
+    var pct = pctOf(d);
     val.textContent = pct + "%";
     fill.style.width = pct + "%";
     fill.className = "cub-fill " + colorClass(pct);
-    reset.textContent = r;
-    node.setAttribute("aria-label", label + ": " + pct + "% used" + (r ? ", resets in " + r : ""));
+    reset.textContent = pct > 0 ? CUB.fmtReset(d.resetAt) : "";
+    setProgress(node, d, s);
   }
 
   function renderBar(){
@@ -90,19 +184,12 @@
       var node = barEl.querySelector('[data-seg="'+s.key+'"]');
       if (!node) return;
       var d = lastData ? lastData[s.key] : null;
-      var canShow = s.opus ? !!(d && d.available) : (show[s.key] !== false);
+      var canShow = s.opus ? hasData(d) : (show[s.key] !== false);
       node.hidden = !canShow;
-      if (canShow){ any = true; fillSeg(node, d, s.label); }
+      if (canShow){ any = true; fillSeg(node, d, s); }
     });
+    barEl.classList.toggle("cub-stale", isStale());
     barEl.style.display = any ? "" : "none";
-  }
-
-  function markErrorBar(){
-    if (!barEl) return;
-    SEGS.forEach(function(s){
-      var node = barEl.querySelector('[data-seg="'+s.key+'"]');
-      if (node && !node.hidden) node.querySelector(".cub-val").textContent = "!";
-    });
   }
 
   // The chat input differs across surfaces (contenteditable on /new & chats, and
@@ -135,7 +222,7 @@
   }
 
   // Allow bursts of re-insertion but back off if a surface fights us every frame,
-  // so we never spin in a tight loop against React (the poll re-acquires instead).
+  // so we never spin in a tight loop against React (the heartbeat re-acquires instead).
   function barReinsertAllowed(){
     var now = Date.now();
     barReinserts.push(now);
@@ -149,15 +236,15 @@
   }
 
   // Watch the composer's parent so that if a re-render detaches the bar we put it
-  // back synchronously (before paint) instead of waiting for the 800ms poll.
+  // back synchronously (before paint) instead of waiting for the next heartbeat.
   function watchBarParent(parent, composer){
     if (barObservedParent === parent && barObservedComposer === composer) return;
     stopBarWatching();
     barObservedParent = parent; barObservedComposer = composer;
     barObserver = new MutationObserver(function(){
       if (!enabled || design !== "1" || !barEl || barEl.isConnected) return;
-      if (!composer.isConnected) return;      // composer replaced → let the poll re-acquire
-      if (!barReinsertAllowed()) return;      // thrashing → back off
+      if (!composer.isConnected) return;      // composer replaced -> let the heartbeat re-acquire
+      if (!barReinsertAllowed()) return;      // thrashing -> back off
       insertBar(composer);
       renderBar();
     });
@@ -165,17 +252,20 @@
   }
 
   function placeBar(){
-    if (!barEl) barEl = buildBar();
+    if (!barEl){ barEl = buildBar(); applyTheme(); }
     var composer = findComposer();
     if (composer && composer.parentElement){
-      var correct = barEl.parentElement === composer.parentElement && barEl.previousElementSibling === composer;
-      if (!correct) insertBar(composer);
+      anchor = composer;
+      if (!(barEl.parentElement === composer.parentElement && barEl.previousElementSibling === composer)) insertBar(composer);
       watchBarParent(composer.parentElement, composer);
-    } else {
-      stopBarWatching();
-      if (!barEl.isConnected){ barEl.classList.add("cub-fixed"); document.body.appendChild(barEl); }
+      renderBar();
+      return true;
     }
+    anchor = null;
+    stopBarWatching();
+    if (!barEl.isConnected){ barEl.classList.add("cub-fixed"); document.body.appendChild(barEl); }
     renderBar();
+    return false;   // still hunting for a composer: keep checking, with backoff
   }
 
   // ===================================================================
@@ -183,7 +273,7 @@
   // ===================================================================
   var inlineEl = null;
   var inlineObserver = null, inlineObservedToolbar = null, inlineReinserts = [];
-  var inlineLastMissLog = 0;
+  var inlineResizeObserver = null, inlineLastMissLog = 0;
   var RING_C = 2 * Math.PI * 8; // circumference of the r=8 ring
 
   function inlineSegHtml(s){
@@ -198,7 +288,7 @@
     var val = '<span class="cub-i-val">–</span>';
     // Bar window reads value-then-bar; ring windows read ring-then-value.
     var inner = s.ring ? (indicator + val) : (val + indicator);
-    return '<span class="cub-i-seg" role="img" data-seg="'+s.key+'" title="'+s.tip+'">'+ inner +'</span>';
+    return '<span class="cub-i-seg" role="progressbar" aria-valuemin="0" aria-valuemax="100" data-seg="'+s.key+'">'+ inner +'</span>';
   }
 
   function buildInline(){
@@ -210,7 +300,7 @@
 
   function fillInlineSeg(node, d, s){
     var val = node.querySelector(".cub-i-val");
-    if (!d || !d.available || d.pct == null){
+    if (!hasData(d)){
       val.textContent = "–";
       if (s.ring){
         var rf0 = node.querySelector(".cub-i-ring-fill");
@@ -219,12 +309,10 @@
         var f0 = node.querySelector(".cub-i-fill");
         f0.style.width = "0%"; f0.className = "cub-i-fill";
       }
-      node.setAttribute("aria-label", s.label + ": no data");
-      node.setAttribute("title", s.label + " (" + s.sub + "): no data");
+      setProgress(node, d, s);
       return;
     }
-    var pct = Math.max(0, Math.min(100, Math.round(d.pct)));
-    var r = pct > 0 ? CUB.fmtReset(d.resetAt) : "";
+    var pct = pctOf(d);
     var cc = colorClass(pct);
     val.textContent = pct + "%";
     if (s.ring){
@@ -237,8 +325,7 @@
       f.style.width = pct + "%";
       f.className = "cub-i-fill " + cc;
     }
-    node.setAttribute("aria-label", s.label + ": " + pct + "% used" + (r ? ", resets in " + r : ""));
-    node.setAttribute("title", s.label + " (" + s.sub + "): " + pct + "%" + (r ? ", resets in " + r : ""));
+    setProgress(node, d, s);
   }
 
   function renderInline(){
@@ -248,19 +335,12 @@
       var node = inlineEl.querySelector('[data-seg="'+s.key+'"]');
       if (!node) return;
       var d = lastData ? lastData[s.key] : null;
-      var canShow = s.opus ? !!(d && d.available) : (show[s.key] !== false);
+      var canShow = s.opus ? hasData(d) : (show[s.key] !== false);
       node.hidden = !canShow;
       if (canShow){ any = true; fillInlineSeg(node, d, s); }
     });
+    inlineEl.classList.toggle("cub-stale", isStale());
     inlineEl.style.display = any ? "" : "none";
-  }
-
-  function markErrorInline(){
-    if (!inlineEl) return;
-    SEGS.forEach(function(s){
-      var node = inlineEl.querySelector('[data-seg="'+s.key+'"]');
-      if (node && !node.hidden) node.querySelector(".cub-i-val").textContent = "!";
-    });
   }
 
   // Find the toolbar's "+" button. We can't assume the toolbar lives in any one
@@ -294,6 +374,7 @@
     var btns = [];
     container.querySelectorAll('button, [role="button"]').forEach(function(b){
       if (b === editor || b.contains(editor)) return;                 // not the input itself
+      if (inlineEl && inlineEl.contains(b)) return;                   // and never our own widget
       if (!b.offsetParent && b.getClientRects().length === 0) return; // hidden
       var r = b.getBoundingClientRect();
       if (r.width === 0 || r.height === 0 || r.height > 64) return;   // button-sized only
@@ -317,29 +398,42 @@
 
   function stopInlineWatching(){
     if (inlineObserver) inlineObserver.disconnect();
-    inlineObserver = null; inlineObservedToolbar = null;
+    if (inlineResizeObserver) inlineResizeObserver.disconnect();
+    inlineObserver = null; inlineResizeObserver = null; inlineObservedToolbar = null;
   }
 
   // Re-insert the widget after the "+" if a re-render detaches it, mirroring the
-  // bar's watcher and its back-off.
+  // bar's watcher and its back-off. The ResizeObserver covers the other half:
+  // alignment only ever changes when the toolbar's own box does, so we re-measure
+  // then instead of on every heartbeat.
   function watchToolbar(parent){
     if (inlineObservedToolbar === parent) return;
     stopInlineWatching();
     inlineObservedToolbar = parent;
     inlineObserver = new MutationObserver(function(){
       if (!enabled || design !== "2" || !inlineEl || inlineEl.isConnected) return;
-      if (!parent.isConnected) return;         // toolbar replaced → let the poll re-acquire
-      if (!inlineReinsertAllowed()) return;    // thrashing → back off
+      if (!parent.isConnected) return;         // toolbar replaced -> let the heartbeat re-acquire
+      if (!inlineReinsertAllowed()) return;    // thrashing -> back off
       var plus = findPlusButton();
-      if (plus && plus.parentElement === parent){ plus.insertAdjacentElement("afterend", inlineEl); alignInline(plus); renderInline(); }
+      if (plus && plus.parentElement === parent){ anchor = plus; plus.insertAdjacentElement("afterend", inlineEl); alignInline(plus); renderInline(); }
     });
     inlineObserver.observe(parent, { childList: true });
+    if (typeof ResizeObserver === "function"){
+      var queued = false;
+      inlineResizeObserver = new ResizeObserver(function(){
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(function(){ queued = false; if (design === "2" && anchor && anchor.isConnected) alignInline(anchor); });
+      });
+      inlineResizeObserver.observe(parent);
+    }
   }
 
   // Vertically center the widget on the "+" button, whatever the toolbar's own
   // alignment happens to be (CSS align-self can't help when we don't control the
   // parent). Clear our transform first so the read is clean, then shift the widget
-  // by the difference between the two boxes' centers.
+  // by the difference between the two boxes' centers. This forces a layout, so it
+  // runs on (re)insert and on toolbar resize only, never on the heartbeat.
   function alignInline(plus){
     if (!inlineEl || !inlineEl.isConnected || !plus) return;
     inlineEl.style.transform = "none";
@@ -351,50 +445,108 @@
   }
 
   function placeInline(){
-    if (!inlineEl) inlineEl = buildInline();
+    if (!inlineEl){ inlineEl = buildInline(); applyTheme(); }
     var plus = findPlusButton();
     if (plus && plus.parentElement){
       var parent = plus.parentElement;
-      var correct = inlineEl.parentElement === parent && inlineEl.previousElementSibling === plus;
-      if (!correct) plus.insertAdjacentElement("afterend", inlineEl);
+      anchor = plus;
+      if (!(inlineEl.parentElement === parent && inlineEl.previousElementSibling === plus)) plus.insertAdjacentElement("afterend", inlineEl);
       alignInline(plus);
       watchToolbar(parent);
-    } else {
-      // Inline-only: with no toolbar to sit in, show nothing and retry next tick.
-      stopInlineWatching();
-      if (inlineEl.isConnected) inlineEl.remove();
-      var now = Date.now();
-      if (now - inlineLastMissLog > 5000){
-        inlineLastMissLog = now;
-        try { console.debug("[Claude Usage Bar] Design 2: composer toolbar not found; will retry"); } catch (e) {}
-      }
+      renderInline();
+      return true;
     }
-    renderInline();
+    // Inline-only: with no toolbar to sit in, show nothing and retry later.
+    anchor = null;
+    stopInlineWatching();
+    if (inlineEl.isConnected) inlineEl.remove();
+    var now = Date.now();
+    if (now - inlineLastMissLog > 5000){
+      inlineLastMissLog = now;
+      try { console.debug("[Claude Usage Bar] Design 2: composer toolbar not found; will retry"); } catch (e) {}
+    }
+    return false;
   }
 
   // ===================================================================
-  // Shared: dispatch by active design, polling, enable/disable.
+  // Shared: finding the composer, placement heartbeat, polling, on/off.
   // ===================================================================
+
+  // Find the composer input: the bottom-most visible, non-tiny editor on the page
+  // (the composer always sits at the bottom). Shared by both designs, and by both
+  // of the walks above within a single pass, hence the one-tick memo: this reads
+  // layout for every candidate and used to run twice per placement attempt.
+  var editorMemo = null, editorMemoAt = 0;
+  function findEditor(){
+    if (editorMemo && editorMemo.isConnected && Date.now() - editorMemoAt < 50) return editorMemo;
+    var nodes = document.querySelectorAll('div[contenteditable="true"], p[contenteditable="true"], textarea');
+    var editor = null, bestBottom = -Infinity;
+    for (var i=0; i<nodes.length; i++){
+      var n = nodes[i];
+      if (!n.offsetParent && n.getClientRects().length === 0) continue; // hidden
+      var r = n.getBoundingClientRect();
+      if (r.width < 120 || r.height === 0) continue;                    // tiny/collapsed
+      if (r.bottom > bestBottom){ bestBottom = r.bottom; editor = n; }
+    }
+    editorMemo = editor; editorMemoAt = Date.now();
+    return editor;
+  }
+
   function render(){ design === "2" ? renderInline() : renderBar(); }
-  function markError(){ design === "2" ? markErrorInline() : markErrorBar(); }
+
+  // A failed fetch keeps the last-known numbers on screen (they are still the best
+  // information we have) and lets the stale styling and the tooltip say so. Only a
+  // failure with nothing cached shows the bare error mark.
+  function markError(){
+    var el = design === "2" ? inlineEl : barEl;
+    if (!el) return;
+    if (lastData){ render(); return; }   // keep the numbers; isStale() decides on the dimming
+    el.querySelectorAll(design === "2" ? ".cub-i-val" : ".cub-val").forEach(function(v){ v.textContent = "!"; });
+  }
 
   function removeWidgets(){
     stopBarWatching();
     stopInlineWatching();
     if (barEl && barEl.isConnected) barEl.remove();
     if (inlineEl && inlineEl.isConnected) inlineEl.remove();
+    anchor = null;
   }
 
-  function place(){
+  // The widget is placed correctly if it still sits right after the node we
+  // anchored it to. Every check here is a plain property read, no layout, which is
+  // what makes it safe to run on a short heartbeat: the geometric search below
+  // (querySelectorAll plus a getBoundingClientRect per candidate) only runs when
+  // this fails, instead of several times a second for the life of the tab.
+  var anchor = null, misses = 0, nextTryAt = 0;
+
+  function placedCorrectly(){
+    var el = design === "2" ? inlineEl : barEl;
+    if (!el || !el.isConnected || !anchor || !anchor.isConnected) return false;
+    return el.previousElementSibling === anchor;
+  }
+
+  function place(force){
     if (!enabled){ removeWidgets(); return; }
-    design === "2" ? placeInline() : placeBar();
+    if (!force && placedCorrectly()) return;
+    var now = Date.now();
+    if (!force && now < nextTryAt) return;
+    var ok = design === "2" ? placeInline() : placeBar();
+    if (ok){ misses = 0; nextTryAt = 0; }
+    else {
+      // Nothing to attach to (a page with no composer, or a surface mid-render).
+      // Ease off rather than paying for the full search 75 times a minute, but
+      // stay responsive enough that a composer appearing is picked up quickly.
+      misses++;
+      nextTryAt = now + Math.min(3200, PLACE_MS * Math.pow(2, Math.min(misses, 2)));
+    }
   }
 
   function switchDesign(next){
     if (next === design) return;
     removeWidgets();          // tear down the old look (widget + observer)
     design = next;
-    if (enabled){ place(); render(); }
+    misses = 0; nextTryAt = 0;
+    if (enabled){ place(true); render(); }
   }
 
   // The fetch-and-store half of refresh(), independent of `enabled` and of the
@@ -403,7 +555,7 @@
   function fetchAndStore(){
     if (inFlight) return inFlight;
     inFlight = CUB.getUsage().then(function (data){
-      lastData = data;
+      lastData = data; fetchFailed = false;
       chrome.storage.local.set({ [LAST_KEY]: data });
       if (enabled) render();
       return data;
@@ -413,20 +565,48 @@
     return inFlight;
   }
 
-  async function refresh(){
+  // Skip the network when the numbers we already have are younger than maxAge.
+  // Every claude.ai tab used to poll on its own timer, so N open tabs meant N
+  // requests a minute for one answer; storage.onChanged already fans the result
+  // out to all of them, so whichever tab asks first now serves the rest.
+  async function refresh(maxAge){
     if (!enabled) return;
-    try { await fetchAndStore(); } catch (e) { markError(); }
+    if (maxAge && lastData && lastData.fetchedAt && Date.now() - lastData.fetchedAt < maxAge) return;
+    try { await fetchAndStore(); } catch (e) { fetchFailed = true; markError(); }
+  }
+
+  // One heartbeat for both jobs: repaint the countdown from cached data (so
+  // "resets in 2h 14m" ticks down on its own) and refetch only once the numbers
+  // are actually old enough to be worth a request.
+  function tick(){
+    if (document.visibilityState !== "visible") return;
+    if (enabled) render();
+    refresh(POLL_MS - 5000);
   }
 
   function startPolling(){
     stopPolling();
-    refresh();
-    pollTimer = setInterval(function(){ if (document.visibilityState === "visible") refresh(); }, POLL_MS);
+    refresh(FOCUS_MAX_AGE_MS);
+    tickTimer = setInterval(tick, TICK_MS);
   }
-  function stopPolling(){ if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
+  function stopPolling(){ if (tickTimer) clearInterval(tickTimer); tickTimer = null; }
 
-  function enable(){ enabled = true; place(); startPolling(); }
-  function disable(){ enabled = false; stopPolling(); removeWidgets(); }
+  // The placement heartbeat is pointless in a background tab: nothing is visible
+  // and claude.ai is not re-rendering the composer under us. Stop it there and
+  // re-place on the way back in.
+  function startPlacing(){
+    if (placeTimer) return;
+    placeTimer = setInterval(function(){ place(); }, PLACE_MS);
+  }
+  function stopPlacing(){ if (placeTimer) clearInterval(placeTimer); placeTimer = null; }
+
+  function enable(){
+    enabled = true;
+    place(true);
+    if (document.visibilityState === "visible") startPlacing();
+    startPolling();
+  }
+  function disable(){ enabled = false; stopPolling(); stopPlacing(); removeWidgets(); }
 
   chrome.storage.onChanged.addListener(function (changes, area){
     if (area !== "local") return;
@@ -449,7 +629,13 @@
   });
 
   document.addEventListener("visibilitychange", function(){
-    if (document.visibilityState === "visible" && enabled) refresh();
+    if (document.visibilityState !== "visible"){ stopPlacing(); return; }
+    if (!enabled) return;
+    detectTheme();          // the page may have been re-themed while we were away
+    place(true);
+    startPlacing();
+    render();
+    refresh(FOCUS_MAX_AGE_MS);
   });
 
   chrome.storage.local.get([TOGGLE_KEY, LAST_KEY, SHOW_KEY, DESIGN_KEY], function (o){
@@ -457,7 +643,7 @@
     if (o[SHOW_KEY]) show = Object.assign(show, o[SHOW_KEY]);
     design = o[DESIGN_KEY] === "2" ? "2" : "1";
     enabled = o[TOGGLE_KEY] !== false;
-    placeTimer = setInterval(place, PLACE_MS);
-    if (enabled) startPolling();
+    watchTheme();
+    if (enabled) enable();
   });
 })();

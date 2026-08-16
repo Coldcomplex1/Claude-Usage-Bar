@@ -32,8 +32,12 @@ body {
 .p-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.08); }
 .p-status { font-size: 11px; opacity: 0.65; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .p-actions { display: flex; gap: 8px; flex: none; }
-.p-btn { border: 1px solid rgba(0,0,0,0.12); background: #fff; color: inherit; font-size: 12px; padding: 4px 10px; border-radius: 7px; cursor: pointer; }
+.p-btn { border: 1px solid rgba(0,0,0,0.12); background: #fff; color: inherit; font-size: 12px; padding: 4px 10px; border-radius: 7px; cursor: pointer; min-width: 64px; }
 .p-btn:hover { background: #f0efeb; }
+.p-btn:disabled { opacity: 0.55; cursor: default; }
+.p-btn:focus-visible { outline: 2px solid #d85a30; outline-offset: 1px; }
+
+@media (prefers-reduced-motion: reduce) { .p-fill { transition: none; } }
 
 @media (prefers-color-scheme: dark) {
   body { color: #e7e7e3; background: #262624; }
