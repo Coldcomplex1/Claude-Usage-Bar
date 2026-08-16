@@ -9,10 +9,16 @@
   padding: 32px 20px;
 }
 
+/* The box follows the window rather than sitting at one fixed width: the whole
+   question here is "which of these two looks do you want", and at 560px the
+   screenshots were too small to tell them apart. The clamp floor is only a cap
+   on a cap -- width:100% still wins below it -- so narrow windows are unchanged.
+   The padding grows with it, so this reads as a bigger box and not a small one
+   stretched. */
 .w-box {
-  width: 100%; max-width: 560px;
+  width: 100%; max-width: clamp(560px, 72vw, 1040px);
   background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 16px;
-  padding: 26px 24px 22px;
+  padding: clamp(26px, 2.4vw, 38px) clamp(24px, 2.4vw, 36px) clamp(22px, 2vw, 32px);
   box-shadow: 0 12px 40px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.05);
 }
 
@@ -24,10 +30,12 @@
 }
 .w-box .o-card + .o-card { border-top: 1px solid rgba(0,0,0,0.08); padding-top: 16px; margin-top: 4px; }
 
+/* Type and logo scale with the box, or a 1040px card ends up carrying 19px
+   headings. */
 .w-head { text-align: center; }
-.w-logo { display: block; margin: 0 auto 10px; border-radius: 9px; }
-.w-title { font-size: 19px; font-weight: 700; margin: 0; }
-.w-sub { font-size: 12.5px; opacity: 0.62; margin: 6px 0 0; line-height: 1.5; }
+.w-logo { display: block; width: clamp(40px, 3.2vw, 50px); height: auto; margin: 0 auto 10px; border-radius: 9px; }
+.w-title { font-size: clamp(19px, 1.5vw, 24px); font-weight: 700; margin: 0; }
+.w-sub { font-size: clamp(12.5px, 1vw, 14.5px); opacity: 0.62; margin: 6px 0 0; line-height: 1.5; }
 
 /* Screenshots of the real thing, rather than the small CSS mockups Settings
    uses: at install nobody has seen either design yet. */
@@ -35,25 +43,35 @@
   display: block; width: 100%; height: auto; border-radius: 7px;
   background: #f1f0ec; border: 1px solid rgba(0,0,0,0.07);
 }
-.w-designs { margin-top: 14px; align-items: stretch; }
+.w-designs { margin-top: 14px; align-items: stretch; gap: clamp(12px, 1.6vw, 22px); }
 
 /* The two screenshots are not the same shape (Design 1 stacks two rows, Design 2
    is a single toolbar), so left to themselves the cards end at different heights.
    Stretch both to the taller one and let the names settle at the bottom, rather
    than cropping or letterboxing either screenshot to a shared aspect ratio. */
 .w-box .o-design { display: flex; }
-.w-box .o-design-card { display: flex; flex-direction: column; width: 100%; }
-.w-box .o-design-name { margin-top: auto; padding-top: 8px; }
+.w-box .o-design-card { display: flex; flex-direction: column; width: 100%; padding: clamp(10px, 1.1vw, 16px); }
+.w-box .o-design-name { margin-top: auto; padding-top: 8px; font-size: clamp(13px, 1.05vw, 15.5px); }
+.w-box .o-design-desc { font-size: clamp(11px, 0.9vw, 13px); }
 
-.w-hint { margin-top: 10px; font-size: 11.5px; opacity: 0.5; }
+/* Scoped to .w-box on purpose: options.css is also the Settings stylesheet, and
+   Settings keeps its own fixed sizes. */
+.w-box .o-row-label { font-size: clamp(13px, 1.05vw, 15.5px); }
+.w-box .o-row-sub { font-size: clamp(12px, 0.95vw, 14px); }
+
+/* Must stay after the .o-row-sub rule above: the hint carries both classes, and
+   .w-hint on its own would lose the specificity contest. */
+.w-box .w-hint { margin-top: 10px; font-size: clamp(11.5px, 0.85vw, 12.5px); opacity: 0.5; }
 
 .w-foot { margin-top: 20px; text-align: center; }
 
+/* Capped and centered rather than edge to edge: full width was right at 560px,
+   but a 1040px-wide button stops reading as a button. */
 .w-cta {
-  display: block; width: 100%;
-  border: none; border-radius: 9px; padding: 11px 16px;
+  display: block; width: 100%; max-width: 560px; margin-inline: auto;
+  border: none; border-radius: 9px; padding: clamp(11px, 1.05vw, 15px) 16px;
   background: #d85a30; color: #fff;
-  font: inherit; font-weight: 600; font-size: 13px; text-align: center; text-decoration: none;
+  font: inherit; font-weight: 600; font-size: clamp(13px, 1vw, 15px); text-align: center; text-decoration: none;
   cursor: pointer; transition: background 0.15s, opacity 0.15s;
 }
 .w-cta:hover { background: #c44f28; }
@@ -62,7 +80,9 @@
 
 .w-settings { margin-top: 12px; }
 
-.w-done { text-align: center; }
+/* Held at the old width: this one holds a tick and a single line, so it has
+   nothing to do with the space the design tiles needed. */
+.w-box.w-done { text-align: center; max-width: 520px; }
 .w-check {
   width: 40px; height: 40px; margin: 0 auto 10px; border-radius: 50%;
   background: rgba(216,90,48,0.12); color: #d85a30;
